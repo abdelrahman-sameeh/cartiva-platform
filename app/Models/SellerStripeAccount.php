@@ -10,21 +10,29 @@ class SellerStripeAccount extends Model
     protected $fillable = [
         'seller_id',
         'stripe_account_id',
-        'details_submitted',
-        'charges_enabled',
-        'payouts_enabled',
-        'disabled_reason',
-        'requirements_currently_due',
+        'card_payments_status',
+        'payouts_status',
+        'transfers_status',
+        'requirements',
         'last_synced_at',
     ];
 
     protected $casts = [
-        'details_submitted' => 'boolean',
-        'charges_enabled' => 'boolean',
-        'payouts_enabled' => 'boolean',
-        'requirements_currently_due' => 'array',
+        'requirements' => 'array',
         'last_synced_at' => 'datetime',
     ];
+
+    public function isReady(): bool
+    {
+        return $this->card_payments_status === 'active'
+            && $this->payouts_status === 'active'
+            && $this->transfers_status === 'active';
+    }
+
+    public function hasOutstandingRequirements(): bool
+    {
+        return ! empty($this->requirements);
+    }
 
     public function seller(): BelongsTo
     {

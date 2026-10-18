@@ -35,6 +35,7 @@ return [
         'secret' => env('STRIPE_SECRET'),
         'connect' => [
             'country' => env('STRIPE_CONNECT_COUNTRY'),
+            'webhook_secret' => env('STRIPE_CONNECT_WEBHOOK_SECRET'),
         ],
     ],
 

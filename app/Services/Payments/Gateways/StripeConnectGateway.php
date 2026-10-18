@@ -3,9 +3,9 @@
 namespace App\Services\Payments\Gateways;
 
 use App\Models\User;
-use Stripe\Account;
-use Stripe\AccountLink;
 use Stripe\StripeClient;
+use Stripe\V2\Core\Account;
+use Stripe\V2\Core\AccountLink;
 
 class StripeConnectGateway
 {
@@ -14,24 +14,42 @@ class StripeConnectGateway
     public function createConnectedAccount(User $seller, string $idempotencyKey): Account
     {
         $parameters = [
-            'type' => 'express',
-            'email' => $seller->email,
-            'capabilities' => [
-                'card_payments' => ['requested' => true],
-                'transfers' => ['requested' => true],
+            'contact_email' => $seller->email,
+            'display_name' => trim("{$seller->first_name} {$seller->last_name}"),
+            'dashboard' => 'express',
+            'defaults' => [
+                'responsibilities' => [
+                    'fees_collector' => 'application',
+                    'losses_collector' => 'application',
+                ],
+            ],
+            'configuration' => [
+                'merchant' => [
+                    'capabilities' => [
+                        'card_payments' => ['requested' => true],
+                    ],
+                ],
+                'recipient' => [
+                    'capabilities' => [
+                        'stripe_balance' => [
+                            'stripe_transfers' => ['requested' => true],
+                        ],
+                    ],
+                ],
             ],
             'metadata' => [
                 'seller_id' => (string) $seller->getKey(),
             ],
+            'include' => $this->accountIncludes(),
         ];
 
         $country = config('services.stripe.connect.country');
 
         if (is_string($country) && $country !== '') {
-            $parameters['country'] = strtoupper($country);
+            $parameters['identity'] = ['country' => strtoupper($country)];
         }
 
-        return $this->stripe->accounts->create($parameters, [
+        return $this->stripe->v2->core->accounts->create($parameters, [
             'idempotency_key' => $idempotencyKey,
         ]);
     }
@@ -41,16 +59,31 @@ class StripeConnectGateway
         string $refreshUrl,
         string $returnUrl
     ): AccountLink {
-        return $this->stripe->accountLinks->create([
+        return $this->stripe->v2->core->accountLinks->create([
             'account' => $stripeAccountId,
-            'refresh_url' => $refreshUrl,
-            'return_url' => $returnUrl,
-            'type' => 'account_onboarding',
+            'use_case' => [
+                'type' => 'account_onboarding',
+                'account_onboarding' => [
+                    'refresh_url' => $refreshUrl,
+                    'return_url' => $returnUrl,
+                ],
+            ],
         ]);
     }
 
     public function retrieveConnectedAccount(string $stripeAccountId): Account
     {
-        return $this->stripe->accounts->retrieve($stripeAccountId, []);
+        return $this->stripe->v2->core->accounts->retrieve($stripeAccountId, [
+            'include' => $this->accountIncludes(),
+        ]);
+    }
+
+    private function accountIncludes(): array
+    {
+        return [
+            'configuration.merchant',
+            'configuration.recipient',
+            'requirements',
+        ];
     }
 }

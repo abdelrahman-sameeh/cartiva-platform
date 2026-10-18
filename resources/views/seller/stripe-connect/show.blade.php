@@ -24,21 +24,17 @@
                             <div class="alert alert-info" role="status">
                                 لم تبدأ إعداد حساب المدفوعات بعد.
                             </div>
-                        @elseif ($stripeAccount->charges_enabled && $stripeAccount->payouts_enabled)
+                        @elseif ($stripeAccount->isReady())
                             <div class="alert alert-success" role="status">
                                 حسابك جاهز لاستقبال المدفوعات والتحويلات.
                             </div>
-                        @elseif ($stripeAccount->disabled_reason)
-                            <div class="alert alert-danger" role="status">
-                                يحتاج حسابك إلى إجراء إضافي قبل تفعيله.
-                            </div>
-                        @elseif ($stripeAccount->details_submitted)
+                        @elseif ($stripeAccount->hasOutstandingRequirements())
                             <div class="alert alert-warning" role="status">
-                                تم إرسال بياناتك، وما زال الحساب قيد المراجعة أو التفعيل.
+                                يحتاج حسابك إلى بيانات أو إجراء إضافي قبل تفعيله.
                             </div>
                         @else
                             <div class="alert alert-info" role="status">
-                                إعداد الحساب غير مكتمل. يمكنك المتابعة من حيث توقفت.
+                                حسابك قيد المراجعة أو التفعيل لدى Stripe.
                             </div>
                         @endif
 
@@ -46,30 +42,30 @@
                             <div class="row g-3 my-4">
                                 <div class="col-md-4">
                                     <div class="rounded-4 bg-light p-3 h-100">
-                                        <small class="text-muted-custom d-block mb-2">البيانات المطلوبة</small>
-                                        <strong>{{ $stripeAccount->details_submitted ? 'مكتملة' : 'غير مكتملة' }}</strong>
+                                        <small class="text-muted-custom d-block mb-2">مدفوعات البطاقات</small>
+                                        <strong>{{ $stripeAccount->card_payments_status === 'active' ? 'مفعّل' : 'غير مفعّل' }}</strong>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="rounded-4 bg-light p-3 h-100">
-                                        <small class="text-muted-custom d-block mb-2">استقبال المدفوعات</small>
-                                        <strong>{{ $stripeAccount->charges_enabled ? 'مفعّل' : 'غير مفعّل' }}</strong>
+                                        <small class="text-muted-custom d-block mb-2">السحب إلى البنك</small>
+                                        <strong>{{ $stripeAccount->payouts_status === 'active' ? 'مفعّل' : 'غير مفعّل' }}</strong>
                                     </div>
                                 </div>
                                 <div class="col-md-4">
                                     <div class="rounded-4 bg-light p-3 h-100">
                                         <small class="text-muted-custom d-block mb-2">استلام التحويلات</small>
-                                        <strong>{{ $stripeAccount->payouts_enabled ? 'مفعّل' : 'غير مفعّل' }}</strong>
+                                        <strong>{{ $stripeAccount->transfers_status === 'active' ? 'مفعّل' : 'غير مفعّل' }}</strong>
                                     </div>
                                 </div>
                             </div>
 
-                            @if ($stripeAccount->requirements_currently_due)
+                            @if ($stripeAccount->hasOutstandingRequirements())
                                 <div class="rounded-4 border p-3 mb-4">
                                     <h2 class="h6 fw-bold">بيانات مطلوبة حاليًا</h2>
                                     <ul class="mb-0">
-                                        @foreach ($stripeAccount->requirements_currently_due as $requirement)
-                                            <li><code>{{ $requirement }}</code></li>
+                                        @foreach ($stripeAccount->requirements as $requirement)
+                                            <li>{{ $requirement['description'] }}</li>
                                         @endforeach
                                     </ul>
                                 </div>
@@ -83,7 +79,7 @@
                         @endif
 
                         <div class="d-flex flex-wrap gap-2 mt-4">
-                            @if (! $stripeAccount || ! $stripeAccount->charges_enabled || ! $stripeAccount->payouts_enabled)
+                            @if (! $stripeAccount || ! $stripeAccount->isReady())
                                 <form method="POST" action="{{ route('seller.stripe-connect.onboard') }}">
                                     @csrf
                                     <button class="btn btn-brand px-4" type="submit">

@@ -15,11 +15,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('seller_id')->unique()->constrained('users')->restrictOnDelete();
             $table->string('stripe_account_id')->unique();
-            $table->boolean('details_submitted')->default(false);
-            $table->boolean('charges_enabled')->default(false);
-            $table->boolean('payouts_enabled')->default(false);
-            $table->string('disabled_reason')->nullable();
-            $table->json('requirements_currently_due')->nullable();
+            $table->string('card_payments_status')->nullable();
+            $table->string('payouts_status')->nullable();
+            $table->string('transfers_status')->nullable();
+            $table->json('requirements')->nullable();
             $table->timestamp('last_synced_at')->nullable();
             $table->timestamps();
         });

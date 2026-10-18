@@ -19,20 +19,22 @@ class SellerStripeAccountTest extends TestCase
 
         $account = $seller->stripeAccount()->create([
             'stripe_account_id' => 'acct_seller_one',
-            'details_submitted' => true,
-            'charges_enabled' => true,
-            'payouts_enabled' => false,
-            'requirements_currently_due' => ['external_account'],
+            'card_payments_status' => 'active',
+            'payouts_status' => 'pending',
+            'transfers_status' => 'active',
+            'requirements' => [['description' => 'Add a bank account']],
             'last_synced_at' => $syncedAt,
         ]);
 
         $seller->refresh();
 
         $this->assertTrue($seller->stripeAccount->is($account));
-        $this->assertTrue($account->details_submitted);
-        $this->assertTrue($account->charges_enabled);
-        $this->assertFalse($account->payouts_enabled);
-        $this->assertSame(['external_account'], $account->requirements_currently_due);
+        $this->assertSame('active', $account->card_payments_status);
+        $this->assertSame('pending', $account->payouts_status);
+        $this->assertSame('active', $account->transfers_status);
+        $this->assertSame([['description' => 'Add a bank account']], $account->requirements);
+        $this->assertFalse($account->isReady());
+        $this->assertTrue($account->hasOutstandingRequirements());
         $this->assertTrue($account->last_synced_at->equalTo($syncedAt));
     }
 

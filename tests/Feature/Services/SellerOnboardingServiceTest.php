@@ -7,8 +7,8 @@ use App\Services\Payments\Gateways\StripeConnectGateway;
 use App\Services\Sellers\SellerOnboardingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
-use Stripe\Account;
-use Stripe\AccountLink;
+use Stripe\V2\Core\Account;
+use Stripe\V2\Core\AccountLink;
 use Tests\TestCase;
 
 class SellerOnboardingServiceTest extends TestCase
@@ -33,10 +33,9 @@ class SellerOnboardingServiceTest extends TestCase
         $this->assertDatabaseHas('seller_stripe_accounts', [
             'seller_id' => $seller->id,
             'stripe_account_id' => 'acct_seller',
-            'details_submitted' => true,
-            'charges_enabled' => true,
-            'payouts_enabled' => false,
-            'disabled_reason' => 'requirements.pending_verification',
+            'card_payments_status' => 'active',
+            'payouts_status' => 'pending',
+            'transfers_status' => 'active',
         ]);
     }
 
@@ -75,35 +74,46 @@ class SellerOnboardingServiceTest extends TestCase
         $gateway->shouldReceive('retrieveConnectedAccount')
             ->once()
             ->with('acct_seller')
-            ->andReturn($this->stripeAccount([
-                'payouts_enabled' => true,
-                'requirements' => [
-                    'disabled_reason' => null,
-                    'currently_due' => [],
-                ],
-            ]));
+            ->andReturn($this->stripeAccount('active', []));
 
         $account = (new SellerOnboardingService($gateway))->sync($localAccount);
 
-        $this->assertTrue($account->details_submitted);
-        $this->assertTrue($account->charges_enabled);
-        $this->assertTrue($account->payouts_enabled);
-        $this->assertNull($account->disabled_reason);
-        $this->assertSame([], $account->requirements_currently_due);
+        $this->assertSame('active', $account->card_payments_status);
+        $this->assertSame('active', $account->payouts_status);
+        $this->assertSame('active', $account->transfers_status);
+        $this->assertSame([], $account->requirements);
+        $this->assertTrue($account->isReady());
         $this->assertNotNull($account->last_synced_at);
     }
 
-    private function stripeAccount(array $overrides = []): Account
-    {
-        return Account::constructFrom(array_replace([
+    private function stripeAccount(
+        string $payoutsStatus = 'pending',
+        array $requirements = [[
+            'description' => 'Add a bank account',
+            'awaiting_action_from' => 'user',
+            'minimum_deadline' => ['status' => 'currently_due'],
+        ]]
+    ): Account {
+        return Account::constructFrom([
             'id' => 'acct_seller',
-            'details_submitted' => true,
-            'charges_enabled' => true,
-            'payouts_enabled' => false,
-            'requirements' => [
-                'disabled_reason' => 'requirements.pending_verification',
-                'currently_due' => ['external_account'],
+            'configuration' => [
+                'merchant' => [
+                    'capabilities' => [
+                        'card_payments' => ['status' => 'active'],
+                        'stripe_balance' => [
+                            'payouts' => ['status' => $payoutsStatus],
+                        ],
+                    ],
+                ],
+                'recipient' => [
+                    'capabilities' => [
+                        'stripe_balance' => [
+                            'stripe_transfers' => ['status' => 'active'],
+                        ],
+                    ],
+                ],
             ],
-        ], $overrides));
+            'requirements' => ['entries' => $requirements],
+        ]);
     }
 }

@@ -29,6 +29,9 @@ class RouteServiceProvider extends ServiceProvider
         });
 
         $this->routes(function () {
+            Route::prefix('api')
+                ->group(base_path('routes/webhooks.php'));
+
             Route::middleware('api')
                 ->prefix('api')
                 ->group(base_path('routes/api/index.php'));

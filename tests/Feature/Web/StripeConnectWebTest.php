@@ -57,10 +57,10 @@ class StripeConnectWebTest extends TestCase
         $seller = $this->createSeller();
         $seller->stripeAccount()->create([
             'stripe_account_id' => 'acct_ready',
-            'details_submitted' => true,
-            'charges_enabled' => true,
-            'payouts_enabled' => true,
-            'requirements_currently_due' => [],
+            'card_payments_status' => 'active',
+            'payouts_status' => 'active',
+            'transfers_status' => 'active',
+            'requirements' => [],
             'last_synced_at' => now(),
         ]);
 

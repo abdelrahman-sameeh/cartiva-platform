@@ -7,7 +7,7 @@ use App\Models\User;
 use App\Services\Payments\Gateways\StripeConnectGateway;
 use Illuminate\Support\Facades\DB;
 use LogicException;
-use Stripe\Account;
+use Stripe\V2\Core\Account;
 
 class SellerOnboardingService
 {
@@ -71,13 +71,17 @@ class SellerOnboardingService
     {
         return [
             'stripe_account_id' => $account->id,
-            'details_submitted' => (bool) $account->details_submitted,
-            'charges_enabled' => (bool) $account->charges_enabled,
-            'payouts_enabled' => (bool) $account->payouts_enabled,
-            'disabled_reason' => $account->requirements?->disabled_reason,
-            'requirements_currently_due' => array_values(
-                $account->requirements?->currently_due ?? []
-            ),
+            'card_payments_status' => $account->configuration?->merchant?->capabilities?->card_payments?->status,
+            'payouts_status' => $account->configuration?->merchant?->capabilities?->stripe_balance?->payouts?->status,
+            'transfers_status' => $account->configuration?->recipient?->capabilities?->stripe_balance?->stripe_transfers?->status,
+            'requirements' => collect($account->requirements?->entries ?? [])
+                ->map(fn ($entry): array => [
+                    'description' => $entry->description,
+                    'awaiting_action_from' => $entry->awaiting_action_from,
+                    'deadline_status' => $entry->minimum_deadline?->status,
+                ])
+                ->values()
+                ->all(),
             'last_synced_at' => now(),
         ];
     }
