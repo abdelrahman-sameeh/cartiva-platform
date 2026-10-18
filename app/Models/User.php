@@ -6,6 +6,7 @@ namespace App\Models;
 use App\Enums\RoleName;
 use App\Models\Cart\Cart;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -44,6 +45,7 @@ use App\Models\Coupon;
  *
  * @property-read Collection<int, Address> $addresses
  * @property-read int|null $addresses_count
+ * @property-read SellerStripeAccount|null $stripeAccount
  * 
  */
 class User extends Authenticatable
@@ -166,5 +168,9 @@ class User extends Authenticatable
         return $this->hasOne(Cart::class);
     }
 
+    public function stripeAccount(): HasOne
+    {
+        return $this->hasOne(SellerStripeAccount::class, 'seller_id');
+    }
 
 }
