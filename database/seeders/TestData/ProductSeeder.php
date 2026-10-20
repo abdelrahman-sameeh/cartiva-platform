@@ -10,7 +10,7 @@ class ProductSeeder extends Seeder
 {
     public function run(): void
     {
-        $seller = User::query()->where('email', 'printora.shop0@gmail.com')->firstOrFail();
+        $seller = User::query()->where('email', 'printore@gmail.com')->firstOrFail();
 
         $products = [
             [

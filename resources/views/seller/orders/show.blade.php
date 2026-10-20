@@ -1,12 +1,13 @@
 @extends('layouts.app')
 
-@section('title', 'طلب المنتجات #' . $subOrder->id . ' | Printora')
+@section('title', 'طلب المنتجات #' . $subOrder->id . ' | printore')
 
 @section('content')
   <div class="container py-5">
     <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
       <div>
-        <a class="text-brand text-decoration-none fw-semibold" href="{{ route('seller.orders.index') }}">العودة للطلبات</a>
+        <a class="text-brand text-decoration-none fw-semibold" href="{{ route('seller.orders.index') }}">العودة
+          للطلبات</a>
         <h1 class="fw-bold mt-2 mb-1">طلب المنتجات #{{ $subOrder->id }}</h1>
         <p class="text-muted-custom mb-0">ضمن الطلب الرئيسي #{{ $subOrder->order_id }}</p>
       </div>
@@ -45,8 +46,10 @@
 
             <div class="d-flex flex-wrap justify-content-end gap-4 pt-3 border-top">
               <span>الإجمالي: <strong>{{ number_format((float) $subOrder->subtotal, 2) }} جنيه</strong></span>
-              <span>الخصم: <strong class="text-success">{{ number_format((float) $subOrder->discount, 2) }} جنيه</strong></span>
-              <span>المطلوب: <strong class="text-brand">{{ number_format((float) $subOrder->total_price, 2) }} جنيه</strong></span>
+              <span>الخصم: <strong class="text-success">{{ number_format((float) $subOrder->discount, 2) }}
+                  جنيه</strong></span>
+              <span>المطلوب: <strong class="text-brand">{{ number_format((float) $subOrder->total_price, 2) }}
+                  جنيه</strong></span>
             </div>
           </div>
         </div>
@@ -56,19 +59,21 @@
         <div class="dashboard-card card border-0 mb-4">
           <div class="card-body p-4">
             <h2 class="h5 fw-bold mb-3">بيانات العميل</h2>
-            <p class="mb-2"><strong>الاسم:</strong> {{ $subOrder->order->user->first_name }} {{ $subOrder->order->user->last_name }}</p>
+            <p class="mb-2"><strong>الاسم:</strong> {{ $subOrder->order->user->first_name }}
+              {{ $subOrder->order->user->last_name }}</p>
             <p class="mb-2"><strong>الهاتف:</strong> {{ $subOrder->order->phone }}</p>
             @if ($subOrder->order->address)
-              <p class="mb-0"><strong>العنوان:</strong> {{ $subOrder->order->address->city }}، {{ $subOrder->order->address->street }}</p>
+              <p class="mb-0"><strong>العنوان:</strong> {{ $subOrder->order->address->city }}،
+                {{ $subOrder->order->address->street }}</p>
             @endif
           </div>
         </div>
 
         @php
           $paymentMethodLabels = [
-              'cash' => 'الدفع عند الاستلام',
-              'card' => 'بطاقة بنكية',
-              'wallet' => 'محفظة إلكترونية',
+            'cash' => 'الدفع عند الاستلام',
+            'card' => 'بطاقة بنكية',
+            'wallet' => 'محفظة إلكترونية',
           ];
         @endphp
 

@@ -4,7 +4,7 @@
     $isSellerStore = isset($storeSeller) && $storeSeller;
     $storeName = $isSellerStore
         ? trim($storeSeller->first_name . ' ' . $storeSeller->last_name)
-        : 'Printora';
+        : 'printore';
     $storeHomeUrl = $isSellerStore
         ? route('stores.show', $storeSeller)
         : route('home');
@@ -13,14 +13,14 @@
         : route('products.search');
 @endphp
 
-@section('title', $product->title . ' | ' . ($isSellerStore ? 'متجر ' . $storeName : 'Printora'))
+@section('title', $product->title . ' | ' . ($isSellerStore ? 'متجر ' . $storeName : 'printore'))
 
 @section('content')
     @php
         $availableVariants = $product->variants->where('stock', '>', 0)->values();
         $selectedVariant = $availableVariants->firstWhere('id', (int) old('product_variant_id'))
             ?? $availableVariants->first();
-        $variantOptions = $availableVariants->map(fn ($variant) => [
+        $variantOptions = $availableVariants->map(fn($variant) => [
             'id' => $variant->id,
             'size' => $variant->size,
             'color' => $variant->color,
@@ -34,7 +34,8 @@
                 {{ $isSellerStore ? 'العودة لمتجر ' . $storeName : 'العودة للمنتجات' }}
             </a>
             @if ($isSellerStore)
-                <div class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-3 mb-2 rounded-4 bg-white border p-3 shadow-sm">
+                <div
+                    class="d-flex flex-wrap align-items-center justify-content-between gap-2 mt-3 mb-2 rounded-4 bg-white border p-3 shadow-sm">
                     <div>
                         <small class="text-muted-custom d-block">أنت تتسوق الآن داخل</small>
                         <strong class="text-brand">متجر {{ $storeName }}</strong>
@@ -49,10 +50,11 @@
             <div class="col-lg-7">
                 <div class="product-main-image-frame dashboard-card card border-0 overflow-hidden">
                     @if ($product->cover_image)
-                        <img class="product-detail-image"
-                            src="{{ $product->cover_image_url }}" alt="{{ $product->title }}">
+                        <img class="product-detail-image" src="{{ $product->cover_image_url }}" alt="{{ $product->title }}">
                     @else
-                        <div class="product-detail-placeholder d-flex align-items-center justify-content-center bg-light text-muted">لا توجد صورة رئيسية</div>
+                        <div
+                            class="product-detail-placeholder d-flex align-items-center justify-content-center bg-light text-muted">
+                            لا توجد صورة رئيسية</div>
                     @endif
                 </div>
 
@@ -60,8 +62,8 @@
                     <div class="product-gallery mt-3">
                         @foreach ($product->pictures as $picture)
                             <div class="product-gallery-item">
-                                <a class="product-thumbnail-frame d-block dashboard-card card border-0 overflow-hidden" href="{{ $picture->picture_url }}"
-                                    target="_blank" rel="noopener">
+                                <a class="product-thumbnail-frame d-block dashboard-card card border-0 overflow-hidden"
+                                    href="{{ $picture->picture_url }}" target="_blank" rel="noopener">
                                     <img class="product-detail-image" src="{{ $picture->picture_url }}"
                                         alt="صورة إضافية لـ {{ $product->title }}">
                                 </a>

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'تعديل منتج | Printora')
+@section('title', 'تعديل منتج | printore')
 
 @section('content')
   @php
@@ -177,20 +177,20 @@
         document.getElementById('attributes-empty-state')?.remove();
 
         attributesList.insertAdjacentHTML('beforeend', `
-            <div class="row g-2 align-items-start product-attribute-row">
-              <div class="col-md-5">
-                <input class="form-control" name="attributes[${index}][key]" type="text"
-                  placeholder="الخاصية، مثل الخامة" required>
+              <div class="row g-2 align-items-start product-attribute-row">
+                <div class="col-md-5">
+                  <input class="form-control" name="attributes[${index}][key]" type="text"
+                    placeholder="الخاصية، مثل الخامة" required>
+                </div>
+                <div class="col-md-5">
+                  <input class="form-control" name="attributes[${index}][value]" type="text"
+                    placeholder="القيمة، مثل قطن" required>
+                </div>
+                <div class="col-md-2 d-grid">
+                  <button class="btn btn-outline-danger remove-attribute" type="button">حذف</button>
+                </div>
               </div>
-              <div class="col-md-5">
-                <input class="form-control" name="attributes[${index}][value]" type="text"
-                  placeholder="القيمة، مثل قطن" required>
-              </div>
-              <div class="col-md-2 d-grid">
-                <button class="btn btn-outline-danger remove-attribute" type="button">حذف</button>
-              </div>
-            </div>
-          `);
+            `);
 
         attributesList.querySelector('.product-attribute-row:last-child input')?.focus();
       });

@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'الطلب #' . $order->id . ' | Printora')
+@section('title', 'الطلب #' . $order->id . ' | printore')
 
 @section('content')
   @php
@@ -40,7 +40,8 @@
                   <div class="flex-grow-1">
                     <h3 class="h6 fw-bold mb-1">{{ $item->title }}</h3>
                     <small class="text-muted-custom d-block">المقاس: {{ $item->size }} — اللون: {{ $item->color }}</small>
-                    <span class="text-muted-custom">{{ $item->quantity }} × {{ number_format((float) $item->price_at_purchase, 2) }} جنيه</span>
+                    <span class="text-muted-custom">{{ $item->quantity }} ×
+                      {{ number_format((float) $item->price_at_purchase, 2) }} جنيه</span>
                   </div>
                   <strong>{{ number_format((float) $item->price_at_purchase * $item->quantity, 2) }} جنيه</strong>
                 </article>
@@ -48,8 +49,10 @@
 
               <div class="d-flex flex-wrap justify-content-end gap-4 pt-3 border-top">
                 <span>الإجمالي: <strong>{{ number_format((float) $subOrder->subtotal, 2) }} جنيه</strong></span>
-                <span>الخصم: <strong class="text-success">{{ number_format((float) $subOrder->discount, 2) }} جنيه</strong></span>
-                <span>المطلوب: <strong class="text-brand">{{ number_format((float) $subOrder->total_price, 2) }} جنيه</strong></span>
+                <span>الخصم: <strong class="text-success">{{ number_format((float) $subOrder->discount, 2) }}
+                    جنيه</strong></span>
+                <span>المطلوب: <strong class="text-brand">{{ number_format((float) $subOrder->total_price, 2) }}
+                    جنيه</strong></span>
               </div>
             </div>
           </section>

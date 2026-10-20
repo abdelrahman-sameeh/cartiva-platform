@@ -4,7 +4,7 @@
     $isSellerStore = isset($storeSeller) && $storeSeller;
     $storeName = $isSellerStore
         ? trim($storeSeller->first_name . ' ' . $storeSeller->last_name)
-        : 'Printora';
+        : 'printore';
     $storeHomeUrl = $isSellerStore
         ? route('stores.show', $storeSeller)
         : route('home');
@@ -16,7 +16,7 @@
         : route('stores.products.show', [$product->seller_id, $product]);
 @endphp
 
-@section('title', $isSellerStore ? 'البحث في متجر ' . $storeName . ' | Printora' : 'البحث عن المنتجات | Printora')
+@section('title', $isSellerStore ? 'البحث في متجر ' . $storeName . ' | printore' : 'البحث عن المنتجات | printore')
 
 @section('content')
     @php

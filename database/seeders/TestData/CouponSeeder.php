@@ -10,7 +10,7 @@ class CouponSeeder extends Seeder
 {
     public function run(): void
     {
-        $seller = User::query()->where('email', 'printora.shop0@gmail.com')->firstOrFail();
+        $seller = User::query()->where('email', 'printore@gmail.com')->firstOrFail();
 
         Coupon::create([
             'code' => 'خصم_الموضة_١٠',

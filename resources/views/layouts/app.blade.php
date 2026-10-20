@@ -486,7 +486,7 @@
                         @auth
                             {{ trim(auth()->user()->first_name . ' ' . auth()->user()->last_name) }}
                         @else
-                            زائر Printora
+                            زائر printore
                         @endauth
                     @endif
                 </span>

@@ -31,7 +31,7 @@ class SellerOnboardingService
 
             $stripeAccount = $this->stripe->createConnectedAccount(
                 $lockedSeller,
-                "printora:seller-connect-account:{$lockedSeller->getKey()}"
+                "printore:seller-connect-account:{$lockedSeller->getKey()}"
             );
 
             return $lockedSeller->stripeAccount()->create(

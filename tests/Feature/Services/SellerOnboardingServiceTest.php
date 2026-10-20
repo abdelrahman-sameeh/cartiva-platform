@@ -22,7 +22,7 @@ class SellerOnboardingServiceTest extends TestCase
         $gateway->shouldReceive('createConnectedAccount')
             ->once()
             ->withArgs(fn (User $user, string $key) => $user->is($seller)
-                && $key === "printora:seller-connect-account:{$seller->id}")
+                && $key === "printore:seller-connect-account:{$seller->id}")
             ->andReturn($this->stripeAccount());
 
         $service = new SellerOnboardingService($gateway);

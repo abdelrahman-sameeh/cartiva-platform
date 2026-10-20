@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', $product->title . ' | Printora')
+@section('title', $product->title . ' | printore')
 
 @section('content')
   <div class="container py-5">
@@ -28,8 +28,7 @@
       <div class="col-lg-7">
         <div class="product-main-image-frame dashboard-card card border-0 overflow-hidden">
           @if ($product->cover_image)
-            <img class="product-detail-image"
-              src="{{ $product->cover_image_url }}" alt="{{ $product->title }}">
+            <img class="product-detail-image" src="{{ $product->cover_image_url }}" alt="{{ $product->title }}">
           @else
             <div class="product-detail-placeholder d-flex align-items-center justify-content-center bg-light text-muted">
               لا توجد صورة رئيسية
@@ -43,8 +42,8 @@
             <div class="product-gallery">
               @foreach ($product->pictures as $picture)
                 <div class="product-gallery-item">
-                  <a class="product-thumbnail-frame d-block dashboard-card card border-0 overflow-hidden" href="{{ $picture->picture_url }}"
-                    target="_blank" rel="noopener">
+                  <a class="product-thumbnail-frame d-block dashboard-card card border-0 overflow-hidden"
+                    href="{{ $picture->picture_url }}" target="_blank" rel="noopener">
                     <img class="product-detail-image" src="{{ $picture->picture_url }}"
                       alt="صورة إضافية لـ {{ $product->title }}">
                   </a>

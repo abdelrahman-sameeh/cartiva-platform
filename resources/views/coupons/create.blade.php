@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'إضافة كوبون | Printora')
+@section('title', 'إضافة كوبون | printore')
 
 @section('content')
   <div class="container py-5">

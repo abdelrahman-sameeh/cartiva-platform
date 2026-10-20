@@ -13,7 +13,7 @@ class UserSeeder extends Seeder
     {
         $users = [
             ['Ahmed', 'Admin', 'admin@gmail.com', RoleName::ADMIN],
-            ['Printora', 'Shop', 'printora.shop0@gmail.com', RoleName::SELLER],
+            ['Printore', 'Shop', 'printore@gmail.com', RoleName::SELLER],
             ['Mohamed', 'Ali', 'buyer1@gmail.com', RoleName::USER],
             ['Hana', 'Sami', 'buyer2@gmail.com', RoleName::USER],
         ];
@@ -23,7 +23,7 @@ class UserSeeder extends Seeder
                 'first_name' => $firstName,
                 'last_name' => $lastName,
                 'email' => $email,
-                'password' => Hash::make('printora1234'),
+                'password' => Hash::make('123456'),
             ]);
 
             $user->syncRoles($role);

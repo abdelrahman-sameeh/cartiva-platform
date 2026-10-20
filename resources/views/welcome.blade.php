@@ -4,7 +4,7 @@
     $isSellerStore = isset($storeSeller) && $storeSeller;
     $storeName = $isSellerStore
         ? trim($storeSeller->first_name . ' ' . $storeSeller->last_name)
-        : 'Printora';
+        : 'printore';
     $storeSearchUrl = $isSellerStore
         ? route('stores.search', $storeSeller)
         : route('products.search');
@@ -13,7 +13,7 @@
         : route('stores.products.show', [$product->seller_id, $product]);
 @endphp
 
-@section('title', $isSellerStore ? 'متجر ' . $storeName . ' | Printora' : 'Printora | ملابس تناسب كل يوم')
+@section('title', $isSellerStore ? 'متجر ' . $storeName . ' | printore' : 'printore | ملابس تناسب كل يوم')
 
 @section('content')
     <div @class(['container pt-2 pb-5', 'seller-store-page' => $isSellerStore])>
@@ -31,7 +31,7 @@
                 @else
                     <h1 class="display-3 fw-bold lh-sm mb-4">ستايلك يبدأ من هنا، <span class="text-brand">ببساطة وجودة.</span>
                     </h1>
-                    <p class="lead text-muted-custom mb-4">اكتشف تشكيلة Printora من الملابس المختارة بعناية، اختار اللون
+                    <p class="lead text-muted-custom mb-4">اكتشف تشكيلة printore من الملابس المختارة بعناية، اختار اللون
                         والمقاس المناسب ليك، واستمتع بتجربة شراء سهلة من أول الطلب لحد التوصيل.</p>
                 @endif
 
@@ -64,7 +64,7 @@
                 <div>
                     <span class="text-brand fw-semibold">{{ $isSellerStore ? 'أحدث منتجات البائع' : 'أحدث المنتجات' }}</span>
                     <h2 class="fw-bold mb-1">{{ $isSellerStore ? 'منتجات متجر ' . $storeName : 'اكتشف منتجات المتجر' }}</h2>
-                    <p class="text-muted-custom mb-0">{{ $isSellerStore ? 'كل المعروض هنا تابع لهذا المتجر فقط.' : 'تصفّح أحدث القطع التي اخترناها لك في Printora.' }}</p>
+                    <p class="text-muted-custom mb-0">{{ $isSellerStore ? 'كل المعروض هنا تابع لهذا المتجر فقط.' : 'تصفّح أحدث القطع التي اخترناها لك في printore.' }}</p>
                 </div>
 
                 <a class="btn btn-outline-primary" href="{{ $storeSearchUrl }}">كل المنتجات والفلاتر</a>

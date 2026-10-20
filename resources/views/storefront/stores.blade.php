@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'تصفح المتاجر | Printora')
+@section('title', 'تصفح المتاجر | printore')
 
 @section('content')
     <div class="container pt-3 pb-5">
@@ -8,7 +8,7 @@
             <div class="row align-items-center g-4">
                 <div class="col-lg-7">
                     <span class="badge rounded-pill bg-primary-subtle text-primary-emphasis px-3 py-2 mb-3">
-                        متاجر Printora
+                        متاجر printore
                     </span>
                     <h1 class="display-5 fw-bold mb-3">اكتشف المتجر المناسب لك</h1>
                     <p class="lead text-muted-custom mb-0">
@@ -19,10 +19,10 @@
                     <form method="GET" action="{{ route('stores.index') }}" role="search">
                         <label class="form-label fw-semibold" for="store-search">ابحث باسم المتجر</label>
                         <div class="input-group input-group-lg shadow-sm rounded-4 overflow-hidden">
-                            <input class="form-control border-0 @error('q') is-invalid @enderror" id="store-search"
-                                name="q" type="search" value="{{ $query }}" placeholder="مثال: أحمد محمد"
-                                maxlength="100">
-                            <button class="btn btn-brand px-4" type="submit"><i class="bi bi-search" aria-hidden="true"></i><span>بحث</span></button>
+                            <input class="form-control border-0 @error('q') is-invalid @enderror" id="store-search" name="q"
+                                type="search" value="{{ $query }}" placeholder="مثال: أحمد محمد" maxlength="100">
+                            <button class="btn btn-brand px-4" type="submit"><i class="bi bi-search"
+                                    aria-hidden="true"></i><span>بحث</span></button>
                         </div>
                         @error('q')
                             <div class="text-danger small mt-2">{{ $message }}</div>
@@ -49,7 +49,8 @@
                     <div class="fs-1 mb-3">🏪</div>
                     <h2 class="h4 fw-bold">لم نجد متجرًا بهذا الاسم</h2>
                     <p class="text-muted-custom mb-4">جرّب كتابة جزء من الاسم أو اعرض جميع المتاجر.</p>
-                    <a class="btn btn-brand" href="{{ route('stores.index') }}"><i class="bi bi-shop" aria-hidden="true"></i><span>عرض كل المتاجر</span></a>
+                    <a class="btn btn-brand" href="{{ route('stores.index') }}"><i class="bi bi-shop"
+                            aria-hidden="true"></i><span>عرض كل المتاجر</span></a>
                 </div>
             </div>
         @else
@@ -80,7 +81,8 @@
                                 </div>
                                 <div class="d-flex align-items-center justify-content-between gap-2">
                                     <span class="small text-muted-custom">تسوق من هذا البائع فقط</span>
-                                    <span class="btn btn-outline-primary px-3"><i class="bi bi-box-arrow-up-left" aria-hidden="true"></i><span>زيارة المتجر</span></span>
+                                    <span class="btn btn-outline-primary px-3"><i class="bi bi-box-arrow-up-left"
+                                            aria-hidden="true"></i><span>زيارة المتجر</span></span>
                                 </div>
                             </div>
                         </article>

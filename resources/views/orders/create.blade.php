@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'إتمام الطلب | Printora')
+@section('title', 'إتمام الطلب | printore')
 
 @section('content')
   <div class="container py-5">
@@ -30,14 +30,15 @@
 
               <div class="mb-3">
                 <label class="form-label fw-semibold" for="phone">رقم الهاتف</label>
-                <input class="form-control @error('phone') is-invalid @enderror" id="phone" name="phone"
-                  type="tel" maxlength="15" value="{{ old('phone', auth()->user()->phone) }}" required>
+                <input class="form-control @error('phone') is-invalid @enderror" id="phone" name="phone" type="tel"
+                  maxlength="15" value="{{ old('phone', auth()->user()->phone) }}" required>
               </div>
 
               <div class="mb-3">
                 <div class="d-flex justify-content-between align-items-center gap-2 mb-2">
                   <label class="form-label fw-semibold mb-0" for="address_id">عنوان الشحن</label>
-                  <a class="text-brand text-decoration-none fw-semibold" href="{{ route('addresses.create') }}">إضافة عنوان</a>
+                  <a class="text-brand text-decoration-none fw-semibold" href="{{ route('addresses.create') }}">إضافة
+                    عنوان</a>
                 </div>
                 <select class="form-select @error('address_id') is-invalid @enderror" id="address_id" name="address_id">
                   <option value="">بدون عنوان محدد</option>
@@ -72,7 +73,8 @@
                   <div class="d-flex justify-content-between gap-3 mb-3">
                     <span>
                       {{ $item['product']['title'] }} × {{ $item['quantity'] }}
-                      <small class="text-muted-custom d-block">{{ $item['variant']['size'] }} / {{ $item['variant']['color'] }}</small>
+                      <small class="text-muted-custom d-block">{{ $item['variant']['size'] }} /
+                        {{ $item['variant']['color'] }}</small>
                     </span>
                     <strong>{{ number_format($item['product']['price'] * $item['quantity'], 2) }} جنيه</strong>
                   </div>

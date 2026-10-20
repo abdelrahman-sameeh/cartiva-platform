@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'إدارة صلاحيات المستخدمين | Printora')
+@section('title', 'إدارة صلاحيات المستخدمين | printore')
 
 @section('content')
   <div class="container py-5">
@@ -69,9 +69,8 @@
                   <div class="d-flex flex-wrap gap-3">
                     @foreach ($roles as $role)
                       <div class="form-check">
-                        <input class="form-check-input" id="user-{{ $managedUser->id }}-role-{{ $role->id }}"
-                          name="role_ids[]" type="checkbox" value="{{ $role->id }}"
-                          @checked($managedUser->roles->contains('id', $role->id))>
+                        <input class="form-check-input" id="user-{{ $managedUser->id }}-role-{{ $role->id }}" name="role_ids[]"
+                          type="checkbox" value="{{ $role->id }}" @checked($managedUser->roles->contains('id', $role->id))>
                         <label class="form-check-label" for="user-{{ $managedUser->id }}-role-{{ $role->id }}">
                           {{ $role->label }}
                         </label>

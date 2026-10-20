@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'إعداد المدفوعات | Printora')
+@section('title', 'إعداد المدفوعات | printore')
 
 @section('content')
     <div class="container py-5">
@@ -9,10 +9,12 @@
                 <div class="dashboard-card card border-0 overflow-hidden">
                     <div class="card-body p-4 p-md-5">
                         <div class="mb-4">
-                            <span class="badge rounded-pill bg-primary-subtle text-primary-emphasis mb-3">Stripe Connect</span>
+                            <span class="badge rounded-pill bg-primary-subtle text-primary-emphasis mb-3">Stripe
+                                Connect</span>
                             <h1 class="h3 fw-bold mb-2">إعداد المدفوعات والتحويلات</h1>
                             <p class="text-muted-custom mb-0">
-                                أكمل بيانات نشاطك وحسابك البنكي في صفحة Stripe الآمنة حتى تتمكن من استقبال المدفوعات والأرباح.
+                                أكمل بيانات نشاطك وحسابك البنكي في صفحة Stripe الآمنة حتى تتمكن من استقبال المدفوعات
+                                والأرباح.
                             </p>
                         </div>
 
@@ -20,7 +22,7 @@
                             <div class="alert alert-danger" role="alert">{{ $errors->first('stripe') }}</div>
                         @endif
 
-                        @if (! $stripeAccount)
+                        @if (!$stripeAccount)
                             <div class="alert alert-info" role="status">
                                 لم تبدأ إعداد حساب المدفوعات بعد.
                             </div>
@@ -79,7 +81,7 @@
                         @endif
 
                         <div class="d-flex flex-wrap gap-2 mt-4">
-                            @if (! $stripeAccount || ! $stripeAccount->isReady())
+                            @if (!$stripeAccount || !$stripeAccount->isReady())
                                 <form method="POST" action="{{ route('seller.stripe-connect.onboard') }}">
                                     @csrf
                                     <button class="btn btn-brand px-4" type="submit">

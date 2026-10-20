@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'سلة التسوق | Printora')
+@section('title', 'سلة التسوق | printore')
 
 @section('content')
   <div class="container py-5">
@@ -12,8 +12,7 @@
       </div>
 
       @if ($cart['items_count'] > 0)
-        <form method="POST" action="{{ route('cart.destroy') }}"
-          onsubmit="return confirm('هل أنت متأكد من إفراغ السلة؟')">
+        <form method="POST" action="{{ route('cart.destroy') }}" onsubmit="return confirm('هل أنت متأكد من إفراغ السلة؟')">
           @csrf
           @method('DELETE')
           <button class="btn btn-outline-danger" type="submit">إفراغ السلة</button>
@@ -64,7 +63,7 @@
                   @foreach ($group['items'] as $item)
                     @php
                       $selectableVariants = collect($item['product']['variants'])
-                        ->filter(fn ($variant) => $variant['stock'] > 0 || $variant['id'] === $item['variant']['id'])
+                        ->filter(fn($variant) => $variant['stock'] > 0 || $variant['id'] === $item['variant']['id'])
                         ->values();
                       $currentColorVariants = $selectableVariants
                         ->where('color', $item['variant']['color'])
@@ -153,8 +152,10 @@
 
                 <div class="d-flex flex-wrap justify-content-end gap-4 pt-3">
                   <span>الإجمالي: <strong>{{ number_format($group['summary']['sub_total'], 2) }} جنيه</strong></span>
-                  <span>الخصم: <strong class="text-success">{{ number_format($group['summary']['discount'], 2) }} جنيه</strong></span>
-                  <span>المطلوب: <strong class="text-brand">{{ number_format($group['summary']['total'], 2) }} جنيه</strong></span>
+                  <span>الخصم: <strong class="text-success">{{ number_format($group['summary']['discount'], 2) }}
+                      جنيه</strong></span>
+                  <span>المطلوب: <strong class="text-brand">{{ number_format($group['summary']['total'], 2) }}
+                      جنيه</strong></span>
                 </div>
               </div>
             </section>
