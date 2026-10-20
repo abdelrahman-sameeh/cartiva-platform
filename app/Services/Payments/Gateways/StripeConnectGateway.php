@@ -16,11 +16,11 @@ class StripeConnectGateway
         $parameters = [
             'contact_email' => $seller->email,
             'display_name' => trim("{$seller->first_name} {$seller->last_name}"),
-            'dashboard' => 'express',
+            'dashboard' => 'full',
             'defaults' => [
                 'responsibilities' => [
-                    'fees_collector' => 'application',
-                    'losses_collector' => 'application',
+                    'fees_collector' => 'stripe',
+                    'losses_collector' => 'stripe',
                 ],
             ],
             'configuration' => [

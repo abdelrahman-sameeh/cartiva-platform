@@ -56,7 +56,9 @@ class StripeConnectGatewayTest extends TestCase
         $this->assertSame('post', $createRequest['method']);
         $this->assertStringEndsWith('/v2/core/accounts', $createRequest['url']);
         $this->assertSame('v2', $createRequest['api_mode']);
-        $this->assertSame('express', $createRequest['params']['dashboard']);
+        $this->assertSame('full', $createRequest['params']['dashboard']);
+        $this->assertSame('stripe', $createRequest['params']['defaults']['responsibilities']['fees_collector']);
+        $this->assertSame('stripe', $createRequest['params']['defaults']['responsibilities']['losses_collector']);
         $this->assertTrue($createRequest['params']['configuration']['merchant']['capabilities']['card_payments']['requested']);
         $this->assertTrue($createRequest['params']['configuration']['recipient']['capabilities']['stripe_balance']['stripe_transfers']['requested']);
         $this->assertSame('US', $createRequest['params']['identity']['country']);
