@@ -14,6 +14,7 @@ class UserSeeder extends Seeder
         $users = [
             ['Ahmed', 'Admin', 'admin@gmail.com', RoleName::ADMIN],
             ['Printore', 'Shop', 'printore@gmail.com', RoleName::SELLER],
+            ['Salman', 'Store', 'salman@gmail.com', RoleName::SELLER],
             ['Mohamed', 'Ali', 'buyer1@gmail.com', RoleName::USER],
             ['Hana', 'Sami', 'buyer2@gmail.com', RoleName::USER],
         ];

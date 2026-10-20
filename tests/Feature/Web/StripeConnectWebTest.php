@@ -71,6 +71,26 @@ class StripeConnectWebTest extends TestCase
             ->assertDontSee('استكمال الإعداد في Stripe');
     }
 
+    public function test_outstanding_requirements_are_grouped_without_exposing_stripe_field_names(): void
+    {
+        $seller = $this->createSeller();
+        $seller->stripeAccount()->create([
+            'stripe_account_id' => 'acct_restricted',
+            'requirements' => [[
+                'description' => 'configuration.merchant.mcc',
+                'awaiting_action_from' => 'user',
+                'deadline_status' => 'past_due',
+            ]],
+        ]);
+
+        $this->actingAs($seller)
+            ->get(route('seller.stripe-connect.show'))
+            ->assertOk()
+            ->assertSee('خطوات بسيطة متبقية')
+            ->assertSee('البيانات المطلوبة حاليًا فقط')
+            ->assertDontSee('configuration.merchant.mcc');
+    }
+
     public function test_seller_can_start_and_refresh_onboarding(): void
     {
         $seller = $this->createSeller();

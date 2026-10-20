@@ -64,12 +64,11 @@
 
                             @if ($stripeAccount->hasOutstandingRequirements())
                                 <div class="rounded-4 border p-3 mb-4">
-                                    <h2 class="h6 fw-bold">بيانات مطلوبة حاليًا</h2>
-                                    <ul class="mb-0">
-                                        @foreach ($stripeAccount->requirements as $requirement)
-                                            <li>{{ $requirement['description'] }}</li>
-                                        @endforeach
-                                    </ul>
+                                    <h2 class="h6 fw-bold">خطوات بسيطة متبقية</h2>
+                                    <p class="mb-0 text-muted-custom">
+                                        سيجمع Stripe البيانات المطلوبة حاليًا فقط: بيانات النشاط الأساسية، والتحقق من
+                                        الهوية، وحساب استلام الأرباح.
+                                    </p>
                                 </div>
                             @endif
 

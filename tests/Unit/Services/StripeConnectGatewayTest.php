@@ -68,6 +68,8 @@ class StripeConnectGatewayTest extends TestCase
         $this->assertStringEndsWith('/v2/core/account_links', $linkRequest['url']);
         $this->assertSame('account_onboarding', $linkRequest['params']['use_case']['type']);
         $this->assertSame('https://example.test/refresh', $linkRequest['params']['use_case']['account_onboarding']['refresh_url']);
+        $this->assertSame('currently_due', $linkRequest['params']['use_case']['account_onboarding']['collection_options']['fields']);
+        $this->assertSame('omit', $linkRequest['params']['use_case']['account_onboarding']['collection_options']['future_requirements']);
 
         $retrieveRequest = $httpClient->requests[2];
         $this->assertSame('get', $retrieveRequest['method']);

@@ -66,6 +66,10 @@ class StripeConnectGateway
                 'account_onboarding' => [
                     'refresh_url' => $refreshUrl,
                     'return_url' => $returnUrl,
+                    'collection_options' => [
+                        'fields' => 'currently_due',
+                        'future_requirements' => 'omit',
+                    ],
                 ],
             ],
         ]);
