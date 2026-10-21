@@ -49,7 +49,7 @@ class StripeConnectWebTest extends TestCase
             ->get(route('dashboard'))
             ->assertOk()
             ->assertSee(route('seller.stripe-connect.show'), false)
-            ->assertSee('إعداد المدفوعات');
+            ->assertSee('إعداد استلام الأرباح');
     }
 
     public function test_ready_account_status_is_shown_without_an_onboarding_button(): void
@@ -57,17 +57,18 @@ class StripeConnectWebTest extends TestCase
         $seller = $this->createSeller();
         $seller->stripeAccount()->create([
             'stripe_account_id' => 'acct_ready',
-            'card_payments_status' => 'active',
+            'onboarding_status' => SellerStripeAccount::STATUS_READY,
             'payouts_status' => 'active',
             'transfers_status' => 'active',
-            'requirements' => [],
+            'requirements_due' => [],
             'last_synced_at' => now(),
         ]);
 
         $this->actingAs($seller)
             ->get(route('seller.stripe-connect.show'))
             ->assertOk()
-            ->assertSee('حسابك جاهز لاستقبال المدفوعات والتحويلات')
+            ->assertSee('حسابك جاهز لاستقبال تحويلات الأرباح')
+            ->assertDontSee('مدفوعات البطاقات')
             ->assertDontSee('استكمال الإعداد في Stripe');
     }
 
@@ -76,8 +77,9 @@ class StripeConnectWebTest extends TestCase
         $seller = $this->createSeller();
         $seller->stripeAccount()->create([
             'stripe_account_id' => 'acct_restricted',
-            'requirements' => [[
-                'description' => 'configuration.merchant.mcc',
+            'onboarding_status' => SellerStripeAccount::STATUS_ACTION_REQUIRED,
+            'requirements_due' => [[
+                'description' => 'identity.individual.given_name',
                 'awaiting_action_from' => 'user',
                 'deadline_status' => 'past_due',
             ]],
@@ -88,7 +90,7 @@ class StripeConnectWebTest extends TestCase
             ->assertOk()
             ->assertSee('خطوات بسيطة متبقية')
             ->assertSee('البيانات المطلوبة حاليًا فقط')
-            ->assertDontSee('configuration.merchant.mcc');
+            ->assertDontSee('identity.individual.given_name');
     }
 
     public function test_seller_can_start_and_refresh_onboarding(): void

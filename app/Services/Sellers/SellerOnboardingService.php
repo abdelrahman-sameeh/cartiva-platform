@@ -5,7 +5,6 @@ namespace App\Services\Sellers;
 use App\Models\SellerStripeAccount;
 use App\Models\User;
 use App\Services\Payments\Gateways\StripeConnectGateway;
-use Illuminate\Support\Facades\DB;
 use LogicException;
 use Stripe\V2\Core\Account;
 
@@ -21,23 +20,15 @@ class SellerOnboardingService
             return $existingAccount;
         }
 
-        return DB::transaction(function () use ($seller): SellerStripeAccount {
-            $lockedSeller = User::query()->lockForUpdate()->findOrFail($seller->getKey());
-            $existingAccount = $lockedSeller->stripeAccount()->first();
+        $stripeAccount = $this->stripe->createConnectedAccount(
+            $seller,
+            "printore:seller-connect-account:express-recipient-v1:{$seller->getKey()}"
+        );
 
-            if ($existingAccount) {
-                return $existingAccount;
-            }
-
-            $stripeAccount = $this->stripe->createConnectedAccount(
-                $lockedSeller,
-                "printore:seller-connect-account:{$lockedSeller->getKey()}"
-            );
-
-            return $lockedSeller->stripeAccount()->create(
-                $this->statusAttributes($stripeAccount)
-            );
-        });
+        return SellerStripeAccount::query()->firstOrCreate(
+            ['seller_id' => $seller->getKey()],
+            $this->statusAttributes($stripeAccount)
+        );
     }
 
     public function onboardingUrl(User $seller, string $refreshUrl, string $returnUrl): string
@@ -69,20 +60,41 @@ class SellerOnboardingService
 
     private function statusAttributes(Account $account): array
     {
+        $requirements = collect($account->requirements?->entries ?? [])
+            ->map(fn ($entry): array => [
+                'description' => $entry->description,
+                'awaiting_action_from' => $entry->awaiting_action_from,
+                'deadline_status' => $entry->minimum_deadline?->status,
+            ])
+            ->values()
+            ->all();
+        $transfers = $account->configuration?->recipient?->capabilities?->stripe_balance?->stripe_transfers;
+
         return [
             'stripe_account_id' => $account->id,
-            'card_payments_status' => $account->configuration?->merchant?->capabilities?->card_payments?->status,
-            'payouts_status' => $account->configuration?->merchant?->capabilities?->stripe_balance?->payouts?->status,
-            'transfers_status' => $account->configuration?->recipient?->capabilities?->stripe_balance?->stripe_transfers?->status,
-            'requirements' => collect($account->requirements?->entries ?? [])
-                ->map(fn ($entry): array => [
-                    'description' => $entry->description,
-                    'awaiting_action_from' => $entry->awaiting_action_from,
-                    'deadline_status' => $entry->minimum_deadline?->status,
-                ])
-                ->values()
-                ->all(),
+            'onboarding_status' => $this->onboardingStatus($transfers?->status, $requirements),
+            'payouts_status' => $account->configuration?->recipient?->capabilities?->stripe_balance?->payouts?->status,
+            'transfers_status' => $transfers?->status,
+            'requirements_due' => $requirements,
+            'disabled_reason' => collect($transfers?->status_details ?? [])->first()?->code,
             'last_synced_at' => now(),
         ];
+    }
+
+    private function onboardingStatus(?string $transfersStatus, array $requirements): string
+    {
+        if ($transfersStatus === 'active') {
+            return SellerStripeAccount::STATUS_READY;
+        }
+
+        if (collect($requirements)->contains('awaiting_action_from', 'user')) {
+            return SellerStripeAccount::STATUS_ACTION_REQUIRED;
+        }
+
+        if ($transfersStatus === 'restricted') {
+            return SellerStripeAccount::STATUS_RESTRICTED;
+        }
+
+        return SellerStripeAccount::STATUS_PENDING;
     }
 }

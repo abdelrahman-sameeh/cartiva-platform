@@ -12,7 +12,7 @@ class SubOrderSeeder extends Seeder
 {
     public function run(): void
     {
-        $seller = User::query()->where('email', 'printore@gmail.com')->firstOrFail();
+        $seller = User::query()->where('email', 'printore-seller@example.test')->firstOrFail();
         $subOrders = [
             'buyer1@gmail.com' => [
                 'products' => ['تيشيرت أسود كلاسيك', 'جاكيت هودي حضري'],

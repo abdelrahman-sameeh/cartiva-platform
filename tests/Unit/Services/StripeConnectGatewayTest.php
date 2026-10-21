@@ -56,10 +56,11 @@ class StripeConnectGatewayTest extends TestCase
         $this->assertSame('post', $createRequest['method']);
         $this->assertStringEndsWith('/v2/core/accounts', $createRequest['url']);
         $this->assertSame('v2', $createRequest['api_mode']);
-        $this->assertSame('full', $createRequest['params']['dashboard']);
-        $this->assertSame('stripe', $createRequest['params']['defaults']['responsibilities']['fees_collector']);
-        $this->assertSame('stripe', $createRequest['params']['defaults']['responsibilities']['losses_collector']);
-        $this->assertTrue($createRequest['params']['configuration']['merchant']['capabilities']['card_payments']['requested']);
+        $this->assertSame('express', $createRequest['params']['dashboard']);
+        $this->assertSame('application', $createRequest['params']['defaults']['responsibilities']['fees_collector']);
+        $this->assertSame('application', $createRequest['params']['defaults']['responsibilities']['losses_collector']);
+        $this->assertIsObject($createRequest['params']['configuration']['customer']);
+        $this->assertArrayNotHasKey('merchant', $createRequest['params']['configuration']);
         $this->assertTrue($createRequest['params']['configuration']['recipient']['capabilities']['stripe_balance']['stripe_transfers']['requested']);
         $this->assertSame('US', $createRequest['params']['identity']['country']);
         $this->assertContains('Idempotency-Key: account-key', $createRequest['headers']);
@@ -74,7 +75,7 @@ class StripeConnectGatewayTest extends TestCase
         $retrieveRequest = $httpClient->requests[2];
         $this->assertSame('get', $retrieveRequest['method']);
         $this->assertStringEndsWith('/v2/core/accounts/acct_seller', $retrieveRequest['url']);
-        $this->assertContains('configuration.merchant', $retrieveRequest['params']['include']);
+        $this->assertContains('configuration.customer', $retrieveRequest['params']['include']);
         $this->assertContains('configuration.recipient', $retrieveRequest['params']['include']);
         $this->assertContains('requirements', $retrieveRequest['params']['include']);
     }

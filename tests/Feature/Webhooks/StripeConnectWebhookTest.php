@@ -38,7 +38,7 @@ class StripeConnectWebhookTest extends TestCase
         $this->app->instance(SellerOnboardingService::class, $service);
 
         $this->postSignedEvent(
-            'v2.core.account[configuration.merchant].capability_status_updated',
+            'v2.core.account[configuration.recipient].capability_status_updated',
             'acct_seller'
         )->assertNoContent();
     }

@@ -19,23 +19,38 @@ class SellerStripeAccountTest extends TestCase
 
         $account = $seller->stripeAccount()->create([
             'stripe_account_id' => 'acct_seller_one',
-            'card_payments_status' => 'active',
+            'onboarding_status' => SellerStripeAccount::STATUS_ACTION_REQUIRED,
             'payouts_status' => 'pending',
-            'transfers_status' => 'active',
-            'requirements' => [['description' => 'Add a bank account']],
+            'transfers_status' => 'restricted',
+            'requirements_due' => [['description' => 'Add a bank account']],
+            'disabled_reason' => 'requirements.past_due',
             'last_synced_at' => $syncedAt,
         ]);
 
         $seller->refresh();
 
         $this->assertTrue($seller->stripeAccount->is($account));
-        $this->assertSame('active', $account->card_payments_status);
+        $this->assertSame(SellerStripeAccount::STATUS_ACTION_REQUIRED, $account->onboarding_status);
         $this->assertSame('pending', $account->payouts_status);
-        $this->assertSame('active', $account->transfers_status);
-        $this->assertSame([['description' => 'Add a bank account']], $account->requirements);
+        $this->assertSame('restricted', $account->transfers_status);
+        $this->assertSame([['description' => 'Add a bank account']], $account->requirements_due);
+        $this->assertSame('requirements.past_due', $account->disabled_reason);
         $this->assertFalse($account->isReady());
         $this->assertTrue($account->hasOutstandingRequirements());
         $this->assertTrue($account->last_synced_at->equalTo($syncedAt));
+    }
+
+    public function test_transfer_readiness_is_independent_from_bank_payout_status(): void
+    {
+        $account = SellerStripeAccount::create([
+            'seller_id' => User::factory()->create()->id,
+            'stripe_account_id' => 'acct_ready_for_transfers',
+            'onboarding_status' => SellerStripeAccount::STATUS_READY,
+            'transfers_status' => 'active',
+            'payouts_status' => 'pending',
+        ]);
+
+        $this->assertTrue($account->isReady());
     }
 
     public function test_a_seller_cannot_have_more_than_one_stripe_account(): void

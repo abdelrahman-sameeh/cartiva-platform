@@ -16,8 +16,8 @@ class StripeConnectWebhookController extends Controller
 {
     private const ACCOUNT_STATUS_EVENTS = [
         'v2.core.account.updated',
-        'v2.core.account[configuration.merchant].capability_status_updated',
-        'v2.core.account[configuration.merchant].updated',
+        'v2.core.account[configuration.customer].capability_status_updated',
+        'v2.core.account[configuration.customer].updated',
         'v2.core.account[configuration.recipient].capability_status_updated',
         'v2.core.account[configuration.recipient].updated',
         'v2.core.account[requirements].updated',

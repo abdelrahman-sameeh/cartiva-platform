@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'إعداد المدفوعات | printore')
+@section('title', 'إعداد استلام الأرباح | printore')
 
 @section('content')
     <div class="container py-5">
@@ -11,10 +11,10 @@
                         <div class="mb-4">
                             <span class="badge rounded-pill bg-primary-subtle text-primary-emphasis mb-3">Stripe
                                 Connect</span>
-                            <h1 class="h3 fw-bold mb-2">إعداد المدفوعات والتحويلات</h1>
+                            <h1 class="h3 fw-bold mb-2">إعداد استلام الأرباح</h1>
                             <p class="text-muted-custom mb-0">
-                                أكمل بيانات نشاطك وحسابك البنكي في صفحة Stripe الآمنة حتى تتمكن من استقبال المدفوعات
-                                والأرباح.
+                                أكمل بيانات نشاطك وحسابك البنكي في صفحة Stripe الآمنة حتى تتمكن من استقبال تحويلات
+                                أرباحك من المنصة.
                             </p>
                         </div>
 
@@ -28,11 +28,15 @@
                             </div>
                         @elseif ($stripeAccount->isReady())
                             <div class="alert alert-success" role="status">
-                                حسابك جاهز لاستقبال المدفوعات والتحويلات.
+                                حسابك جاهز لاستقبال تحويلات الأرباح.
                             </div>
-                        @elseif ($stripeAccount->hasOutstandingRequirements())
+                        @elseif ($stripeAccount->onboarding_status === 'action_required')
                             <div class="alert alert-warning" role="status">
                                 يحتاج حسابك إلى بيانات أو إجراء إضافي قبل تفعيله.
+                            </div>
+                        @elseif ($stripeAccount->onboarding_status === 'restricted')
+                            <div class="alert alert-danger" role="status">
+                                حسابك مقيّد حاليًا. افتح إعداد Stripe لمعرفة الإجراء المطلوب.
                             </div>
                         @else
                             <div class="alert alert-info" role="status">
@@ -42,19 +46,13 @@
 
                         @if ($stripeAccount)
                             <div class="row g-3 my-4">
-                                <div class="col-md-4">
-                                    <div class="rounded-4 bg-light p-3 h-100">
-                                        <small class="text-muted-custom d-block mb-2">مدفوعات البطاقات</small>
-                                        <strong>{{ $stripeAccount->card_payments_status === 'active' ? 'مفعّل' : 'غير مفعّل' }}</strong>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
+                                <div class="col-md-6">
                                     <div class="rounded-4 bg-light p-3 h-100">
                                         <small class="text-muted-custom d-block mb-2">السحب إلى البنك</small>
                                         <strong>{{ $stripeAccount->payouts_status === 'active' ? 'مفعّل' : 'غير مفعّل' }}</strong>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
+                                <div class="col-md-6">
                                     <div class="rounded-4 bg-light p-3 h-100">
                                         <small class="text-muted-custom d-block mb-2">استلام التحويلات</small>
                                         <strong>{{ $stripeAccount->transfers_status === 'active' ? 'مفعّل' : 'غير مفعّل' }}</strong>

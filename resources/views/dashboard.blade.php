@@ -54,7 +54,7 @@
                                     <a class="btn btn-outline-primary px-4"
                                         href="{{ route('seller.orders.index') }}">طلبات المنتجات</a>
                                     <a class="btn btn-outline-primary px-4"
-                                        href="{{ route('seller.stripe-connect.show') }}">إعداد المدفوعات</a>
+                                        href="{{ route('seller.stripe-connect.show') }}">إعداد استلام الأرباح</a>
                                 </div>
                             </div>
                         @endif

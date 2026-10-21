@@ -16,19 +16,15 @@ class StripeConnectGateway
         $parameters = [
             'contact_email' => $seller->email,
             'display_name' => trim("{$seller->first_name} {$seller->last_name}"),
-            'dashboard' => 'full',
+            'dashboard' => 'express',
             'defaults' => [
                 'responsibilities' => [
-                    'fees_collector' => 'stripe',
-                    'losses_collector' => 'stripe',
+                    'fees_collector' => 'application',
+                    'losses_collector' => 'application',
                 ],
             ],
             'configuration' => [
-                'merchant' => [
-                    'capabilities' => [
-                        'card_payments' => ['requested' => true],
-                    ],
-                ],
+                'customer' => (object) [],
                 'recipient' => [
                     'capabilities' => [
                         'stripe_balance' => [
@@ -85,7 +81,7 @@ class StripeConnectGateway
     private function accountIncludes(): array
     {
         return [
-            'configuration.merchant',
+            'configuration.customer',
             'configuration.recipient',
             'requirements',
         ];

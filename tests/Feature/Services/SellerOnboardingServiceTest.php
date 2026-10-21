@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Services;
 
+use App\Models\SellerStripeAccount;
 use App\Models\User;
 use App\Services\Payments\Gateways\StripeConnectGateway;
 use App\Services\Sellers\SellerOnboardingService;
@@ -22,18 +23,20 @@ class SellerOnboardingServiceTest extends TestCase
         $gateway->shouldReceive('createConnectedAccount')
             ->once()
             ->withArgs(fn (User $user, string $key) => $user->is($seller)
-                && $key === "printore:seller-connect-account:{$seller->id}")
+                && $key === "printore:seller-connect-account:express-recipient-v1:{$seller->id}")
             ->andReturn($this->stripeAccount());
 
         $service = new SellerOnboardingService($gateway);
         $firstAccount = $service->accountFor($seller);
         $secondAccount = $service->accountFor($seller);
+        $thirdAccount = $service->accountFor($seller);
 
         $this->assertTrue($firstAccount->is($secondAccount));
+        $this->assertTrue($firstAccount->is($thirdAccount));
         $this->assertDatabaseHas('seller_stripe_accounts', [
             'seller_id' => $seller->id,
             'stripe_account_id' => 'acct_seller',
-            'card_payments_status' => 'active',
+            'onboarding_status' => SellerStripeAccount::STATUS_READY,
             'payouts_status' => 'pending',
             'transfers_status' => 'active',
         ]);
@@ -78,12 +81,52 @@ class SellerOnboardingServiceTest extends TestCase
 
         $account = (new SellerOnboardingService($gateway))->sync($localAccount);
 
-        $this->assertSame('active', $account->card_payments_status);
+        $this->assertSame(SellerStripeAccount::STATUS_READY, $account->onboarding_status);
         $this->assertSame('active', $account->payouts_status);
         $this->assertSame('active', $account->transfers_status);
-        $this->assertSame([], $account->requirements);
+        $this->assertSame([], $account->requirements_due);
         $this->assertTrue($account->isReady());
         $this->assertNotNull($account->last_synced_at);
+    }
+
+    public function test_it_marks_an_account_as_action_required_when_stripe_needs_user_input(): void
+    {
+        $seller = User::factory()->create();
+        $localAccount = $seller->stripeAccount()->create([
+            'stripe_account_id' => 'acct_seller',
+        ]);
+        $stripeAccount = $this->stripeAccount('restricted');
+        $stripeAccount->configuration->recipient->capabilities->stripe_balance->stripe_transfers->status = 'restricted';
+        $stripeAccount->configuration->recipient->capabilities->stripe_balance->stripe_transfers->status_details = [
+            \Stripe\StripeObject::constructFrom(['code' => 'requirements.past_due']),
+        ];
+        $gateway = Mockery::mock(StripeConnectGateway::class);
+        $gateway->shouldReceive('retrieveConnectedAccount')->once()->andReturn($stripeAccount);
+
+        $account = (new SellerOnboardingService($gateway))->sync($localAccount);
+
+        $this->assertSame(SellerStripeAccount::STATUS_ACTION_REQUIRED, $account->onboarding_status);
+        $this->assertSame('requirements.past_due', $account->disabled_reason);
+        $this->assertTrue($account->hasOutstandingRequirements());
+        $this->assertFalse($account->isReady());
+    }
+
+    public function test_a_stripe_failure_does_not_create_a_local_account(): void
+    {
+        $seller = User::factory()->create();
+        $gateway = Mockery::mock(StripeConnectGateway::class);
+        $gateway->shouldReceive('createConnectedAccount')
+            ->once()
+            ->andThrow(new \Stripe\Exception\ApiConnectionException('Stripe is unavailable.'));
+
+        try {
+            (new SellerOnboardingService($gateway))->accountFor($seller);
+            $this->fail('The Stripe exception was not thrown.');
+        } catch (\Stripe\Exception\ApiConnectionException) {
+            $this->assertDatabaseMissing('seller_stripe_accounts', [
+                'seller_id' => $seller->id,
+            ]);
+        }
     }
 
     private function stripeAccount(
@@ -97,17 +140,11 @@ class SellerOnboardingServiceTest extends TestCase
         return Account::constructFrom([
             'id' => 'acct_seller',
             'configuration' => [
-                'merchant' => [
-                    'capabilities' => [
-                        'card_payments' => ['status' => 'active'],
-                        'stripe_balance' => [
-                            'payouts' => ['status' => $payoutsStatus],
-                        ],
-                    ],
-                ],
+                'customer' => ['applied' => true],
                 'recipient' => [
                     'capabilities' => [
                         'stripe_balance' => [
+                            'payouts' => ['status' => $payoutsStatus],
                             'stripe_transfers' => ['status' => 'active'],
                         ],
                     ],
