@@ -3,11 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Exceptions\ProductAlreadyExistsException;
+use App\Http\Requests\Product\FilterProductsRequest;
 use App\Http\Requests\Product\StoreProductRequest;
 use App\Http\Requests\Product\UpdateProductRequest;
 use App\Http\Resources\ProductResource;
 use App\Models\Product;
 use App\Models\ProductPicture;
+use App\Services\ProductFilter;
 use App\Services\ProductService;
 use Auth;
 use Illuminate\Http\Request;
@@ -76,41 +78,26 @@ class ProductController
         );
     }
 
-    public function find(Request $request)
+    public function find(FilterProductsRequest $request, ProductFilter $productFilter)
     {
-        $word = $request->query('word');
-        $min_price = $request->query('min_price');
-        $max_price = $request->query('max_price');
-        $best_seller = $request->query('best_seller');
-        $rating = $request->query('rating');
-        $min_ratings = $request->query('min_ratings') ?? 0;
-        $limit = $request->query('limit') ?? 10;
+        $filters = $request->validated();
+        $limit = $filters['per_page'] ?? $filters['limit'] ?? 10;
         $query = Product::query()
             ->with('attributes', 'sub_categories.category', 'pictures', 'variants.options')
             ->withSum('variants', 'stock');
 
-        if (! is_null($word)) {
-            $query->where(function ($q) use ($word) {
-                $q->where('title', 'like', '%'.$word.'%')
-                    ->orWhere('slug', 'like', '%'.$word.'%')
-                    ->orWhere('description', 'like', '%'.$word.'%');
-            });
+        if (isset($filters['best_seller'])) {
+            $filters['sort'] = $filters['best_seller'] ? 'popular' : 'latest';
         }
-        if (! is_null($min_price)) {
-            $query->where('price', '>=', $min_price);
-        }
-        if (! is_null($max_price)) {
-            $query->where('price', '<=', $max_price);
-        }
-        if (! is_null($best_seller) && in_array($best_seller, ['1', '0'], true)) {
-            $query->orderBy('sold_count', (int) $best_seller ? 'desc' : 'asc');
-        }
-        if (! is_null($rating) && in_array($rating, ['high', 'low'], true)) {
+
+        if (isset($filters['rating'])) {
             $query
-                ->where('rating_count', '>=', $min_ratings)
-                ->orderBy('rating_avg', $rating == 'high' ? 'desc' : 'asc');
+                ->where('rating_count', '>=', $filters['min_ratings'] ?? 0)
+                ->orderBy('rating_avg', $filters['rating'] === 'high' ? 'desc' : 'asc');
+            unset($filters['sort']);
         }
-        $products = $query->paginate($limit);
+
+        $products = $productFilter->apply($query, $filters)->paginate($limit)->withQueryString();
 
         return response()->json([
             'data' => ProductResource::collection($products),

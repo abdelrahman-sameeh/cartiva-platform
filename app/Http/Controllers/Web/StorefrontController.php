@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Category;
 use App\Models\Product;
 use App\Models\User;
+use App\Services\ProductFilter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -15,6 +16,8 @@ use Illuminate\View\View;
 
 class StorefrontController extends Controller
 {
+    public function __construct(private readonly ProductFilter $productFilter) {}
+
     public function index(): View
     {
         $products = $this->productsQuery()
@@ -108,6 +111,16 @@ class StorefrontController extends Controller
             'in_stock' => ['nullable', 'boolean'],
             'on_sale' => ['nullable', 'boolean'],
             'sort' => ['nullable', Rule::in(['latest', 'price_asc', 'price_desc', 'rating', 'popular'])],
+            'attributes' => ['nullable', 'array', 'max:20'],
+            'attributes.*' => ['array', 'max:50'],
+            'attributes.*.*' => ['string', 'max:255'],
+            'attribute_ranges' => ['nullable', 'array', 'max:20'],
+            'attribute_ranges.*.min' => ['nullable', 'numeric'],
+            'attribute_ranges.*.max' => ['nullable', 'numeric'],
+            'attribute_ranges.*.unit' => ['nullable', 'string', 'max:30'],
+            'options' => ['nullable', 'array', 'max:20'],
+            'options.*' => ['array', 'max:50'],
+            'options.*.*' => ['string', 'max:100'],
         ]);
 
         $validator->after(function ($validator) use ($request) {
@@ -133,59 +146,8 @@ class StorefrontController extends Controller
         $filters['q'] = trim($filters['q'] ?? '');
         $filters['sort'] = $filters['sort'] ?? 'latest';
 
-        $products = $this->productsQuery($seller)
-            ->when($filters['q'] !== '', function ($query) use ($filters) {
-                $like = "%{$filters['q']}%";
-
-                $query->where(function ($query) use ($like) {
-                    $query->where('title', 'like', $like)
-                        ->orWhere('description', 'like', $like)
-                        ->orWhere('slug', 'like', $like)
-                        ->orWhereHas('attributes', function ($query) use ($like) {
-                            $query->where('key', 'like', $like)
-                                ->orWhere('value', 'like', $like);
-                        })
-                        ->orWhereHas('sub_categories', function ($query) use ($like) {
-                            $query->where('title', 'like', $like)
-                                ->orWhereHas('category', fn ($query) => $query->where('title', 'like', $like));
-                        });
-                });
-            })
-            ->when(! empty($filters['category_id']), function ($query) use ($filters) {
-                $query->whereHas('sub_categories', function ($query) use ($filters) {
-                    $query->where('category_id', $filters['category_id']);
-                });
-            })
-            ->when(! empty($filters['sub_category_id']), function ($query) use ($filters) {
-                $query->whereHas('sub_categories', function ($query) use ($filters) {
-                    $query->where('sub_category.id', $filters['sub_category_id']);
-                });
-            })
-            ->when(isset($filters['min_price']), function ($query) use ($filters) {
-                $query->whereRaw(
-                    '(price - discount_amount) >= CAST(? AS DECIMAL(12, 2))',
-                    [$filters['min_price']]
-                );
-            })
-            ->when(isset($filters['max_price']), function ($query) use ($filters) {
-                $query->whereRaw(
-                    '(price - discount_amount) <= CAST(? AS DECIMAL(12, 2))',
-                    [$filters['max_price']]
-                );
-            })
-            ->when(isset($filters['min_rating']), function ($query) use ($filters) {
-                $query->where('rating_avg', '>=', $filters['min_rating']);
-            })
-            ->when(! empty($filters['in_stock']), fn ($query) => $query->whereHas(
-                'variants',
-                fn ($query) => $query->where('stock', '>', 0)
-            ))
-            ->when(! empty($filters['on_sale']), fn ($query) => $query->where('discount_amount', '>', 0))
-            ->when($filters['sort'] === 'price_asc', fn ($query) => $query->orderByRaw('(price - discount_amount) asc'))
-            ->when($filters['sort'] === 'price_desc', fn ($query) => $query->orderByRaw('(price - discount_amount) desc'))
-            ->when($filters['sort'] === 'rating', fn ($query) => $query->orderByDesc('rating_avg')->orderByDesc('rating_count'))
-            ->when($filters['sort'] === 'popular', fn ($query) => $query->orderByDesc('sold_count'))
-            ->when($filters['sort'] === 'latest', fn ($query) => $query->latest())
+        $products = $this->productFilter
+            ->apply($this->productsQuery($seller), $filters)
             ->paginate(12)
             ->withQueryString();
 
