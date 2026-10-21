@@ -41,6 +41,26 @@ class StripeConnectWebhookTest extends TestCase
             'v2.core.account[configuration.recipient].capability_status_updated',
             'acct_seller'
         )->assertNoContent();
+
+        $this->assertDatabaseHas('stripe_webhook_events', [
+            'event_id' => 'evt_test',
+            'type' => 'v2.core.account[configuration.recipient].capability_status_updated',
+        ]);
+    }
+
+    public function test_a_repeated_account_event_is_processed_once(): void
+    {
+        User::factory()->create()->stripeAccount()->create([
+            'stripe_account_id' => 'acct_seller',
+        ]);
+        $service = Mockery::mock(SellerOnboardingService::class);
+        $service->shouldReceive('sync')->once();
+        $this->app->instance(SellerOnboardingService::class, $service);
+
+        $this->postSignedEvent('v2.core.account.updated', 'acct_seller')->assertNoContent();
+        $this->postSignedEvent('v2.core.account.updated', 'acct_seller')->assertNoContent();
+
+        $this->assertDatabaseCount('stripe_webhook_events', 1);
     }
 
     public function test_an_invalid_signature_is_rejected(): void

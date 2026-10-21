@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Webhooks;
 
 use App\Http\Controllers\Controller;
 use App\Models\SellerStripeAccount;
+use App\Models\StripeWebhookEvent;
 use App\Services\Sellers\SellerOnboardingService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -50,6 +51,12 @@ class StripeConnectWebhookController extends Controller
             return response()->noContent();
         }
 
+        $event = StripeWebhookEvent::pending($notification->id, $notification->type);
+
+        if (! $event) {
+            return response()->noContent();
+        }
+
         $localAccount = SellerStripeAccount::query()
             ->where('stripe_account_id', $notification->related_object->id)
             ->first();
@@ -57,6 +64,8 @@ class StripeConnectWebhookController extends Controller
         if ($localAccount) {
             $this->onboardingService->sync($localAccount);
         }
+
+        $event->markProcessed();
 
         return response()->noContent();
     }
