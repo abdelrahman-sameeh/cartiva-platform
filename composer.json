@@ -48,7 +48,8 @@
         ],
         "post-create-project-cmd": [
             "@php artisan key:generate --ansi"
-        ]
+        ],
+        "dev:stripe": "bash scripts/dev-stripe.sh"
     },
     "extra": {
         "laravel": {
