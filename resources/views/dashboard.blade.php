@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'حسابي | Printore')
+@section('title', 'حسابي | ' . config('app.name'))
 
 @section('content')
     <div class="container py-5">
@@ -48,7 +48,7 @@
                                 <div class="d-flex flex-wrap gap-2">
                                     <a class="btn btn-outline-dark px-4" href="{{ route('stores.show', $user) }}"
                                         target="_blank" rel="noopener">عرض متجري</a>
-                                    <a class="btn btn-brand px-4" href="{{ route('seller.products.index') }}">منتجاتي</a>
+                                    <a class="btn btn-outline-primary px-4" href="{{ route('seller.products.index') }}">منتجاتي</a>
                                     <a class="btn btn-outline-primary px-4"
                                         href="{{ route('seller.coupons.index') }}">كوبوناتي</a>
                                     <a class="btn btn-outline-primary px-4"

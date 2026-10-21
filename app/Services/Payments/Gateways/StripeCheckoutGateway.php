@@ -30,7 +30,7 @@ class StripeCheckoutGateway
                     'currency' => $payment->currency,
                     'unit_amount' => $payment->amount_minor,
                     'product_data' => [
-                        'name' => "Printore order #{$orderId}",
+                        'name' => "Cativa order #{$orderId}",
                     ],
                 ],
             ]],

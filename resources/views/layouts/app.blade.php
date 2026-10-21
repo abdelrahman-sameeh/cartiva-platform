@@ -11,11 +11,13 @@
 
     <style>
         :root {
-            --brand: #5b4cf0;
-            --brand-dark: #4033c7;
-            --ink: #182230;
+            --brand: #4f46e5;
+            --brand-dark: #312e81;
+            --brand-bright: #7c3aed;
+            --accent: #f97316;
+            --ink: #172033;
             --muted: #667085;
-            --brand-soft: #eeecff;
+            --brand-soft: #eef2ff;
             --danger: #d92d20;
             --danger-dark: #b42318;
             --danger-soft: #fee4e2;
@@ -28,14 +30,14 @@
             color: var(--ink);
             font-family: "Readex Pro Variable", sans-serif;
             background:
-                radial-gradient(circle at 10% 10%, rgba(91, 76, 240, .14), transparent 32rem),
-                radial-gradient(circle at 90% 90%, rgba(15, 188, 150, .12), transparent 30rem),
+                radial-gradient(circle at 10% 10%, rgba(79, 70, 229, .13), transparent 32rem),
+                radial-gradient(circle at 90% 90%, rgba(249, 115, 22, .1), transparent 30rem),
                 #f8f9fc;
         }
 
         .navbar-brand {
             color: var(--ink);
-            font-weight: 700;
+            font-weight: 800;
             letter-spacing: -.04em;
         }
 
@@ -95,8 +97,8 @@
 
         .site-navbar .navbar-actions .btn-brand {
             border-color: transparent;
-            background: linear-gradient(135deg, var(--brand), #796cf7);
-            box-shadow: 0 .4rem 1rem rgba(91, 76, 240, .24);
+            background: linear-gradient(135deg, var(--brand), var(--brand-bright));
+            box-shadow: 0 .4rem 1rem rgba(79, 70, 229, .24);
         }
 
         .site-navbar .navbar-actions .btn-outline-primary {
@@ -146,8 +148,8 @@
             min-height: 2.85rem;
             border: 0;
             border-radius: .9rem;
-            background: linear-gradient(135deg, var(--brand), #796cf7);
-            box-shadow: 0 .5rem 1.25rem rgba(91, 76, 240, .24);
+            background: linear-gradient(135deg, var(--brand), var(--brand-bright));
+            box-shadow: 0 .5rem 1.25rem rgba(79, 70, 229, .24);
         }
 
         .navbar-menu-trigger:hover,
@@ -191,7 +193,7 @@
 
         .navbar-menu-dropdown .dropdown-item.active {
             color: #fff;
-            background: linear-gradient(135deg, var(--brand), #796cf7);
+            background: linear-gradient(135deg, var(--brand), var(--brand-bright));
         }
 
         .navbar-menu-dropdown .dropdown-logout {
@@ -219,6 +221,20 @@
             overflow-wrap: anywhere;
         }
 
+        .navbar-brand-name strong {
+            display: block;
+            font-size: 1.1rem;
+            letter-spacing: -.03em;
+        }
+
+        .navbar-brand-context {
+            display: block;
+            color: var(--muted);
+            font-size: .68rem;
+            font-weight: 600;
+            letter-spacing: 0;
+        }
+
         @media (max-width: 991.98px) {
             .navbar-brand {
                 max-width: calc(100% - 4rem);
@@ -226,6 +242,7 @@
         }
 
         .brand-mark {
+            position: relative;
             display: inline-grid;
             width: 2.25rem;
             height: 2.25rem;
@@ -233,8 +250,21 @@
             color: #fff;
             place-items: center;
             border-radius: .75rem;
-            background: linear-gradient(135deg, var(--brand), #8a7fff);
-            box-shadow: 0 .5rem 1.25rem rgba(91, 76, 240, .28);
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--brand-dark), var(--brand-bright));
+            box-shadow: 0 .5rem 1.25rem rgba(79, 70, 229, .28);
+        }
+
+        .brand-mark::after {
+            position: absolute;
+            width: .55rem;
+            height: .55rem;
+            right: -.12rem;
+            bottom: -.12rem;
+            content: "";
+            border: 2px solid #fff;
+            border-radius: 50%;
+            background: var(--accent);
         }
 
         .page-shell {
@@ -326,7 +356,7 @@
             font-weight: 700;
             font-size: .95rem;
             line-height: 1.25;
-            border-radius: .85rem;
+            border-radius: 1rem;
             align-items: center;
             justify-content: center;
             gap: .4rem;
@@ -359,8 +389,9 @@
         .btn-brand,
         .btn-primary {
             color: #fff;
-            border-color: var(--brand);
-            background-color: var(--brand);
+            border-color: transparent;
+            background: linear-gradient(135deg, var(--brand), var(--brand-bright));
+            box-shadow: 0 .55rem 1.2rem rgba(79, 70, 229, .22);
         }
 
         .btn-brand:hover,
@@ -368,73 +399,50 @@
         .btn-primary:hover,
         .btn-primary:focus {
             color: #fff;
-            border-color: var(--brand-dark);
-            background-color: var(--brand-dark);
+            border-color: transparent;
+            background: linear-gradient(135deg, var(--brand-dark), var(--brand));
+            box-shadow: 0 .7rem 1.4rem rgba(49, 46, 129, .25);
         }
 
-        .btn-outline-primary {
+        .btn-outline-primary,
+        .btn-outline-secondary,
+        .btn-light,
+        .btn-outline-dark {
             color: var(--brand-dark);
-            border-color: var(--brand-soft);
-            background-color: var(--brand-soft);
+            border-color: rgba(79, 70, 229, .13);
+            background: rgba(255, 255, 255, .82);
+            box-shadow: 0 .35rem .9rem rgba(23, 32, 51, .07);
         }
 
         .btn-outline-primary:hover,
-        .btn-outline-primary:focus {
-            color: #fff;
-            border-color: var(--brand);
-            background-color: var(--brand);
+        .btn-outline-primary:focus,
+        .btn-outline-secondary:hover,
+        .btn-outline-secondary:focus,
+        .btn-light:hover,
+        .btn-light:focus,
+        .btn-outline-dark:hover,
+        .btn-outline-dark:focus {
+            color: var(--brand-dark);
+            border-color: rgba(79, 70, 229, .28);
+            background: var(--brand-soft);
+            box-shadow: 0 .55rem 1.1rem rgba(79, 70, 229, .12);
         }
 
-        .btn-danger {
-            color: #fff;
-            border-color: var(--danger);
-            background-color: var(--danger);
+        .btn-danger,
+        .btn-outline-danger {
+            color: var(--danger-dark);
+            border-color: rgba(217, 45, 32, .12);
+            background: var(--danger-soft);
+            box-shadow: 0 .35rem .9rem rgba(180, 35, 24, .08);
         }
 
         .btn-danger:hover,
-        .btn-danger:focus {
-            color: #fff;
-            border-color: var(--danger-dark);
-            background-color: var(--danger-dark);
-        }
-
-        .btn-outline-danger {
-            color: var(--danger-dark);
-            border-color: var(--danger-soft);
-            background-color: var(--danger-soft);
-        }
-
+        .btn-danger:focus,
         .btn-outline-danger:hover,
         .btn-outline-danger:focus {
             color: #fff;
             border-color: var(--danger);
-            background-color: var(--danger);
-        }
-
-        .btn-light {
-            color: var(--ink);
-            border-color: #e4e7ec;
-            background-color: var(--neutral-soft);
-        }
-
-        .btn-light:hover,
-        .btn-light:focus {
-            color: var(--ink);
-            border-color: #d0d5dd;
-            background-color: #e4e7ec;
-        }
-
-        .btn-outline-dark {
-            color: #fff;
-            border-color: var(--ink);
-            background-color: var(--ink);
-        }
-
-        .btn-outline-dark:hover,
-        .btn-outline-dark:focus {
-            color: #fff;
-            border-color: #101828;
-            background-color: #101828;
+            background: var(--danger);
         }
 
         .text-brand {
@@ -467,27 +475,16 @@
 <body>
     <nav class="navbar navbar-expand-lg fixed-top site-navbar border-bottom py-3" aria-label="التنقل الرئيسي">
         <div class="container">
-            <a class="navbar-brand d-flex align-items-center" href="{{ isset($storeSeller) && $storeSeller ? route('stores.show', $storeSeller) : route('home') }}">
+            <a class="navbar-brand d-flex align-items-center" href="{{ route('home') }}" aria-label="{{ config('app.name') }} - الرئيسية">
                 <span class="brand-mark">
-                    @if (isset($storeSeller) && $storeSeller)
-                        {{ mb_strtoupper(mb_substr($storeSeller->first_name, 0, 1) . mb_substr($storeSeller->last_name, 0, 1)) }}
-                    @else
-                        @auth
-                            {{ mb_strtoupper(mb_substr(auth()->user()->first_name, 0, 1) . mb_substr(auth()->user()->last_name, 0, 1)) }}
-                        @else
-                            PS
-                        @endauth
-                    @endif
+                    C
                 </span>
                 <span class="navbar-brand-name">
+                    <strong>{{ config('app.name') }}</strong>
                     @if (isset($storeSeller) && $storeSeller)
-                        متجر {{ trim($storeSeller->first_name . ' ' . $storeSeller->last_name) }}
+                        <small class="navbar-brand-context">متجر {{ trim($storeSeller->first_name . ' ' . $storeSeller->last_name) }}</small>
                     @else
-                        @auth
-                            {{ trim(auth()->user()->first_name . ' ' . auth()->user()->last_name) }}
-                        @else
-                            زائر printore
-                        @endauth
+                        <small class="navbar-brand-context">Marketplace</small>
                     @endif
                 </span>
             </a>

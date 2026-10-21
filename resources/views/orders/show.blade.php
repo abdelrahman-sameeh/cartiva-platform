@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'الطلب #' . $order->id . ' | printore')
+@section('title', 'الطلب #' . $order->id . ' | ' . config('app.name'))
 
 @section('content')
   @php

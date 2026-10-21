@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'إضافة منتج | printore')
+@section('title', 'إضافة منتج | ' . config('app.name'))
 
 @section('content')
   @php

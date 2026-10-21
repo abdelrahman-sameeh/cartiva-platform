@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'إنشاء حساب | printore')
+@section('title', 'إنشاء حساب | ' . config('app.name'))
 
 @section('content')
     <div class="container py-5">
@@ -26,7 +26,7 @@
                 <div class="col-lg-7 p-4 p-md-5">
                     <div class="mb-4">
                         <h2 class="fw-bold mb-2">إنشاء حساب جديد</h2>
-                        <p class="text-muted-custom mb-0">املأ البيانات التالية للانضمام إلى printore.</p>
+                        <p class="text-muted-custom mb-0">املأ البيانات التالية للانضمام إلى {{ config('app.name') }}.</p>
                     </div>
 
                     <form method="POST" action="{{ route('register.store') }}" novalidate>

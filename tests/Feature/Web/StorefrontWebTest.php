@@ -18,9 +18,13 @@ class StorefrontWebTest extends TestCase
         $this->get(route('home'))
             ->assertOk()
             ->assertSee('action="'.route('products.search').'"', false)
+            ->assertSee('Cativa')
             ->assertSee('تسوّق من متاجر مميزة')
             ->assertSee(route('stores.index'), false)
-            ->assertSee('ستايلك يبدأ من هنا')
+            ->assertSee('كل اللي بتدور عليه')
+            ->assertSee('ابحث عن أي منتج')
+            ->assertDontSee('printore', false)
+            ->assertDontSee('ملابس تناسب كل يوم')
             ->assertDontSee('متجر متعدد البائعين')
             ->assertDontSee('بائعين مختلفين');
     }

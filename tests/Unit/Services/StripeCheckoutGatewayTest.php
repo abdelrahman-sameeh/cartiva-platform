@@ -56,6 +56,7 @@ class StripeCheckoutGatewayTest extends TestCase
         $this->assertSame('payment', $request['params']['mode']);
         $this->assertSame(18000, $request['params']['line_items'][0]['price_data']['unit_amount']);
         $this->assertSame('egp', $request['params']['line_items'][0]['price_data']['currency']);
+        $this->assertSame('Cativa order #42', $request['params']['line_items'][0]['price_data']['product_data']['name']);
         $this->assertSame('42', $request['params']['metadata']['order_id']);
         $this->assertSame('17', $request['params']['metadata']['payment_id']);
         $this->assertSame('ORDER_42', $request['params']['payment_intent_data']['transfer_group']);

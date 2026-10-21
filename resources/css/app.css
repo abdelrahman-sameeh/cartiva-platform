@@ -3,11 +3,12 @@
 @import 'bootstrap-icons/font/bootstrap-icons.css';
 
 .store-directory-hero {
-    border: 1px solid rgba(91, 76, 240, .16);
+    border: 1px solid rgba(79, 70, 229, .16);
     background:
-        radial-gradient(circle at 12% 20%, rgba(91, 76, 240, .2), transparent 18rem),
-        linear-gradient(135deg, rgba(255, 255, 255, .98), rgba(238, 236, 255, .88));
-    box-shadow: 0 1.5rem 3.5rem rgba(91, 76, 240, .1);
+        radial-gradient(circle at 12% 20%, rgba(79, 70, 229, .18), transparent 18rem),
+        radial-gradient(circle at 88% 80%, rgba(249, 115, 22, .1), transparent 15rem),
+        linear-gradient(135deg, rgba(255, 255, 255, .98), rgba(238, 242, 255, .88));
+    box-shadow: 0 1.5rem 3.5rem rgba(79, 70, 229, .1);
 }
 
 .store-directory-card {
@@ -15,8 +16,8 @@
 }
 
 .store-directory-card:hover {
-    border-color: rgba(91, 76, 240, .2) !important;
-    box-shadow: 0 1.25rem 3rem rgba(91, 76, 240, .13);
+    border-color: rgba(79, 70, 229, .2) !important;
+    box-shadow: 0 1.25rem 3rem rgba(79, 70, 229, .13);
     transform: translateY(-4px);
 }
 
@@ -30,8 +31,8 @@
     font-weight: 800;
     place-items: center;
     border-radius: 1.25rem;
-    background: linear-gradient(135deg, var(--brand), #8a7fff);
-    box-shadow: 0 .65rem 1.5rem rgba(91, 76, 240, .25);
+    background: linear-gradient(135deg, var(--brand-dark), var(--brand-bright));
+    box-shadow: 0 .65rem 1.5rem rgba(79, 70, 229, .25);
 }
 
 .min-w-0 {
@@ -41,11 +42,12 @@
 .seller-store-hero {
     position: relative;
     overflow: hidden;
-    border: 1px solid rgba(91, 76, 240, .18);
+    border: 1px solid rgba(79, 70, 229, .18);
     background:
-        radial-gradient(circle at 12% 20%, rgba(91, 76, 240, .2), transparent 18rem),
-        linear-gradient(135deg, rgba(255, 255, 255, .98), rgba(238, 236, 255, .9));
-    box-shadow: 0 1.5rem 3.5rem rgba(91, 76, 240, .12);
+        radial-gradient(circle at 12% 20%, rgba(79, 70, 229, .18), transparent 18rem),
+        radial-gradient(circle at 88% 80%, rgba(249, 115, 22, .08), transparent 15rem),
+        linear-gradient(135deg, rgba(255, 255, 255, .98), rgba(238, 242, 255, .9));
+    box-shadow: 0 1.5rem 3.5rem rgba(79, 70, 229, .12);
 }
 
 .seller-store-hero::after {
@@ -57,7 +59,7 @@
     content: "";
     pointer-events: none;
     border-radius: 50%;
-    background: rgba(91, 76, 240, .1);
+    background: rgba(79, 70, 229, .1);
 }
 
 .seller-store-hero > * {

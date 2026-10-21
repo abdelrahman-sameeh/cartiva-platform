@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'طلب المنتجات #' . $subOrder->id . ' | printore')
+@section('title', 'طلب المنتجات #' . $subOrder->id . ' | ' . config('app.name'))
 
 @section('content')
   <div class="container py-5">

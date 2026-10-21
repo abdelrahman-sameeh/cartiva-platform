@@ -4,7 +4,7 @@
     $isSellerStore = isset($storeSeller) && $storeSeller;
     $storeName = $isSellerStore
         ? trim($storeSeller->first_name . ' ' . $storeSeller->last_name)
-        : 'printore';
+        : config('app.name');
     $storeSearchUrl = $isSellerStore
         ? route('stores.search', $storeSeller)
         : route('products.search');
@@ -13,7 +13,7 @@
         : route('stores.products.show', [$product->seller_id, $product]);
 @endphp
 
-@section('title', $isSellerStore ? 'متجر ' . $storeName . ' | printore' : 'printore | ملابس تناسب كل يوم')
+@section('title', $isSellerStore ? 'متجر ' . $storeName . ' | ' . config('app.name') : config('app.name') . ' | كل احتياجاتك في مكان واحد')
 
 @section('content')
     <div @class(['container pt-2 pb-5', 'seller-store-page' => $isSellerStore])>
@@ -29,17 +29,17 @@
                     <h1 class="display-3 fw-bold lh-sm mb-4">أهلاً بك في <span class="text-brand">متجر {{ $storeName }}</span></h1>
                     <p class="lead text-muted-custom mb-4">كل المنتجات والنتائج هنا مقدمة من {{ $storeName }} فقط، لتجربة شراء واضحة داخل متجر واحد.</p>
                 @else
-                    <h1 class="display-3 fw-bold lh-sm mb-4">ستايلك يبدأ من هنا، <span class="text-brand">ببساطة وجودة.</span>
+                    <h1 class="display-3 fw-bold lh-sm mb-4">كل اللي بتدور عليه، <span class="text-brand">في مكان واحد.</span>
                     </h1>
-                    <p class="lead text-muted-custom mb-4">اكتشف تشكيلة printore من الملابس المختارة بعناية، اختار اللون
-                        والمقاس المناسب ليك، واستمتع بتجربة شراء سهلة من أول الطلب لحد التوصيل.</p>
+                    <p class="lead text-muted-custom mb-4">اكتشف منتجات متنوعة من متاجر موثوقة على
+                        {{ config('app.name') }}، واستمتع بتجربة شراء سهلة من البحث لحد استلام طلبك.</p>
                 @endif
 
                 <form class="mb-4" method="GET" action="{{ $storeSearchUrl }}" role="search">
                     <label class="visually-hidden" for="product-search">ابحث عن منتج</label>
                     <div class="input-group input-group-lg shadow-sm rounded-4 overflow-hidden">
                         <input class="form-control border-0" id="product-search" name="q" type="search"
-                            placeholder="ابحث عن هودي..." maxlength="100">
+                            placeholder="ابحث عن أي منتج..." maxlength="100">
                         <button class="btn btn-brand px-4" type="submit"><i class="bi bi-search" aria-hidden="true"></i><span>بحث</span></button>
                     </div>
                     @error('q')
@@ -64,7 +64,7 @@
                 <div>
                     <span class="text-brand fw-semibold">{{ $isSellerStore ? 'أحدث منتجات البائع' : 'أحدث المنتجات' }}</span>
                     <h2 class="fw-bold mb-1">{{ $isSellerStore ? 'منتجات متجر ' . $storeName : 'اكتشف منتجات المتجر' }}</h2>
-                    <p class="text-muted-custom mb-0">{{ $isSellerStore ? 'كل المعروض هنا تابع لهذا المتجر فقط.' : 'تصفّح أحدث القطع التي اخترناها لك في printore.' }}</p>
+                    <p class="text-muted-custom mb-0">{{ $isSellerStore ? 'كل المعروض هنا تابع لهذا المتجر فقط.' : 'تصفّح أحدث المنتجات المتاحة على ' . config('app.name') . '.' }}</p>
                 </div>
 
                 <a class="btn btn-outline-primary" href="{{ $storeSearchUrl }}">كل المنتجات والفلاتر</a>

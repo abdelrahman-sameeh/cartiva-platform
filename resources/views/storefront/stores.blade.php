@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'تصفح المتاجر | printore')
+@section('title', 'تصفح المتاجر | ' . config('app.name'))
 
 @section('content')
     <div class="container pt-3 pb-5">
@@ -8,7 +8,7 @@
             <div class="row align-items-center g-4">
                 <div class="col-lg-7">
                     <span class="badge rounded-pill bg-primary-subtle text-primary-emphasis px-3 py-2 mb-3">
-                        متاجر printore
+                        متاجر {{ config('app.name') }}
                     </span>
                     <h1 class="display-5 fw-bold mb-3">اكتشف المتجر المناسب لك</h1>
                     <p class="lead text-muted-custom mb-0">

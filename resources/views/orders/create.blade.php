@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'إتمام الطلب | printore')
+@section('title', 'إتمام الطلب | ' . config('app.name'))
 
 @section('content')
   <div class="container py-5">
