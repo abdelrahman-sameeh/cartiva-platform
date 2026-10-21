@@ -3,8 +3,10 @@
 namespace App\Models\Order;
 
 use App\Models\Address;
+use App\Models\Payment;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * @property int $id
@@ -19,7 +21,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $payment_method
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- *
  * @property-read User $user
  * @property-read Address|null $address
  * @property-read \Illuminate\Database\Eloquent\Collection<int, SubOrder> $subOrders
@@ -42,8 +43,8 @@ class Order extends Model
     ];
 
     protected $casts = [
-        'subtotal'    => 'decimal:2',
-        'discount'    => 'decimal:2',
+        'subtotal' => 'decimal:2',
+        'discount' => 'decimal:2',
         'total_price' => 'decimal:2',
     ];
 
@@ -62,5 +63,10 @@ class Order extends Model
     public function subOrders()
     {
         return $this->hasMany(SubOrder::class);
+    }
+
+    public function payments(): HasMany
+    {
+        return $this->hasMany(Payment::class);
     }
 }

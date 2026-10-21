@@ -33,6 +33,10 @@ return [
 
     'stripe' => [
         'secret' => env('STRIPE_SECRET'),
+        'currency' => env('STRIPE_CURRENCY', 'egp'),
+        'checkout' => [
+            'webhook_secret' => env('STRIPE_CHECKOUT_WEBHOOK_SECRET'),
+        ],
         'connect' => [
             'country' => env('STRIPE_CONNECT_COUNTRY'),
             'webhook_secret' => env('STRIPE_CONNECT_WEBHOOK_SECRET'),

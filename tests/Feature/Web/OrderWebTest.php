@@ -8,7 +8,10 @@ use App\Models\Order\Order;
 use App\Models\Product;
 use App\Models\User;
 use App\Services\OrderService;
+use App\Services\Payments\Gateways\StripeCheckoutGateway;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Mockery;
+use Stripe\Checkout\Session;
 use Tests\TestCase;
 
 class OrderWebTest extends TestCase
@@ -71,6 +74,79 @@ class OrderWebTest extends TestCase
         $this->actingAs($otherBuyer)
             ->get(route('orders.show', $order))
             ->assertForbidden();
+    }
+
+    public function test_buyer_can_start_stripe_checkout_for_their_card_order(): void
+    {
+        [$buyer, , , $address] = $this->prepareCart();
+        $order = app(OrderService::class)->create($buyer, [
+            'phone' => '01012345678',
+            'address_id' => $address->id,
+            'payment_method' => 'card',
+        ]);
+        $gateway = Mockery::mock(StripeCheckoutGateway::class);
+        $gateway->shouldReceive('createSession')->once()->andReturn(Session::constructFrom([
+            'id' => 'cs_test_web_order',
+            'object' => 'checkout.session',
+            'status' => 'open',
+            'payment_status' => 'unpaid',
+            'url' => 'https://checkout.stripe.test/web-order',
+        ]));
+        $this->app->instance(StripeCheckoutGateway::class, $gateway);
+
+        $this->actingAs($buyer)
+            ->get(route('orders.show', $order))
+            ->assertOk()
+            ->assertSee('الدفع الآمن عبر Stripe');
+
+        $this->actingAs($buyer)
+            ->post(route('orders.payment.store', $order))
+            ->assertRedirect('https://checkout.stripe.test/web-order');
+
+        $this->assertDatabaseHas('payments', [
+            'order_id' => $order->id,
+            'checkout_session_id' => 'cs_test_web_order',
+            'status' => 'pending',
+        ]);
+    }
+
+    public function test_checkout_return_does_not_mark_the_order_paid(): void
+    {
+        [$buyer, , , $address] = $this->prepareCart();
+        $order = app(OrderService::class)->create($buyer, [
+            'phone' => '01012345678',
+            'address_id' => $address->id,
+            'payment_method' => 'card',
+        ]);
+
+        $this->actingAs($buyer)
+            ->get(route('orders.payment.return', [
+                'order' => $order,
+                'session_id' => 'cs_fake',
+            ]))
+            ->assertRedirect(route('orders.show', $order));
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'payment_status' => 'pending',
+        ]);
+    }
+
+    public function test_buyer_cannot_start_checkout_for_another_buyers_order(): void
+    {
+        [$buyer, , , $address] = $this->prepareCart();
+        $order = app(OrderService::class)->create($buyer, [
+            'phone' => '01012345678',
+            'address_id' => $address->id,
+            'payment_method' => 'card',
+        ]);
+        $otherBuyer = $this->createUser('checkout-attacker@example.test');
+
+        $this->actingAs($otherBuyer)
+            ->post(route('orders.payment.store', $order))
+            ->assertForbidden();
+
+        $this->assertDatabaseCount('payments', 0);
     }
 
     public function test_seller_can_view_and_update_their_product_order(): void
