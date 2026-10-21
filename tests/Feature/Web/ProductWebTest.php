@@ -53,8 +53,17 @@ class ProductWebTest extends TestCase
                 'price' => '199.99',
                 'discount_amount' => 20,
                 'variants' => [
-                    ['size' => 'M', 'color' => 'أسود', 'stock' => 6],
-                    ['size' => 'L', 'color' => 'أسود', 'stock' => 4],
+                    [
+                        'sku' => 'PHONE-128',
+                        'stock' => 6,
+                        'options' => [['key' => 'Storage', 'value' => '128 GB']],
+                    ],
+                    [
+                        'sku' => 'PHONE-256',
+                        'price' => 249.99,
+                        'stock' => 4,
+                        'options' => [['key' => 'Storage', 'value' => '256 GB']],
+                    ],
                 ],
                 'cover_image' => UploadedFile::fake()->createWithContent(
                     'cover.png',
@@ -63,7 +72,7 @@ class ProductWebTest extends TestCase
                 'sub_categories' => [$subCategory->id],
                 'attributes' => [
                     ['key' => 'Color', 'value' => 'Black'],
-                    ['key' => 'Storage', 'value' => '256 GB'],
+                    ['key' => 'Storage', 'value' => '256 GB', 'numeric_value' => 256, 'unit' => 'GB'],
                 ],
             ])
             ->assertRedirect(route('seller.products.index'))
@@ -80,9 +89,12 @@ class ProductWebTest extends TestCase
         $this->assertSame(10, $product->stock);
         $this->assertDatabaseHas('product_variants', [
             'product_id' => $product->id,
-            'size' => 'M',
-            'color' => 'أسود',
+            'sku' => 'PHONE-128',
             'stock' => 6,
+        ]);
+        $this->assertDatabaseHas('product_variant_options', [
+            'key' => 'storage',
+            'value' => '128 GB',
         ]);
         $this->assertDatabaseHas('product_sub_category', [
             'product_id' => $product->id,
@@ -97,6 +109,8 @@ class ProductWebTest extends TestCase
             'product_id' => $product->id,
             'key' => 'storage',
             'value' => '256 GB',
+            'numeric_value' => 256,
+            'unit' => 'GB',
         ]);
         Storage::disk('public')->assertExists(str_replace('/storage/', '', $product->cover_image));
     }
@@ -124,7 +138,12 @@ class ProductWebTest extends TestCase
         ]);
         $product->sub_categories()->attach($subCategory);
         $product->attributes()->create(['key' => 'ram', 'value' => '32 GB']);
-        $product->variants()->create(['size' => 'L', 'color' => 'أسود', 'stock' => 6]);
+        $variant = $product->variants()->create([
+            'sku' => 'LAPTOP-32GB',
+            'stock' => 6,
+            'option_signature' => hash('sha256', json_encode(['ram' => '32 gb'])),
+        ]);
+        $variant->options()->create(['key' => 'ram', 'value' => '32 GB']);
         $product->pictures()->create(['picture' => '/storage/products/gallery/laptop-side.png']);
 
         $this->actingAs($seller)
@@ -140,7 +159,7 @@ class ProductWebTest extends TestCase
             ->assertSee('Electronics / Laptops')
             ->assertSee('ram')
             ->assertSee('32 GB')
-            ->assertSee('أسود')
+            ->assertSee('LAPTOP-32GB')
             ->assertSee('1,400.00');
     }
 
@@ -167,7 +186,11 @@ class ProductWebTest extends TestCase
         ]);
         $product->sub_categories()->attach($subCategory);
         $product->attributes()->create(['key' => 'color', 'value' => 'Red']);
-        $oldVariant = $product->variants()->create(['size' => 'M', 'color' => 'أحمر', 'stock' => 4]);
+        $oldVariant = $product->variants()->create([
+            'stock' => 4,
+            'option_signature' => hash('sha256', json_encode(['size' => 'm'])),
+        ]);
+        $oldVariant->options()->create(['key' => 'size', 'value' => 'M']);
 
         $this->actingAs($seller)
             ->get(route('seller.products.edit', $product))
@@ -181,8 +204,14 @@ class ProductWebTest extends TestCase
                 'price' => 120,
                 'discount_amount' => 10,
                 'variants' => [
-                    ['size' => 'L', 'color' => 'أزرق', 'stock' => 5],
-                    ['size' => 'XL', 'color' => 'أسود', 'stock' => 3],
+                    [
+                        'stock' => 5,
+                        'options' => [['key' => 'Size', 'value' => 'L']],
+                    ],
+                    [
+                        'stock' => 3,
+                        'options' => [['key' => 'Size', 'value' => 'XL']],
+                    ],
                 ],
                 'sub_categories' => [$subCategory->id],
                 'attributes' => [
@@ -203,10 +232,9 @@ class ProductWebTest extends TestCase
         $this->assertDatabaseMissing('product_variants', ['id' => $oldVariant->id]);
         $this->assertDatabaseHas('product_variants', [
             'product_id' => $product->id,
-            'size' => 'L',
-            'color' => 'أزرق',
             'stock' => 5,
         ]);
+        $this->assertDatabaseHas('product_variant_options', ['key' => 'size', 'value' => 'L']);
         $this->assertDatabaseMissing('product_attributes', [
             'product_id' => $product->id,
             'key' => 'color',

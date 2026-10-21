@@ -57,21 +57,23 @@
       <div class="col-lg-5">
         <div class="dashboard-card card border-0 mb-4">
           <div class="card-body p-4">
-            <h2 class="h5 fw-bold mb-3">المقاسات والألوان</h2>
+            <h2 class="h5 fw-bold mb-3">نسخ المنتج</h2>
             <div class="table-responsive">
               <table class="table align-middle mb-0">
                 <thead>
                   <tr>
-                    <th>المقاس</th>
-                    <th>اللون</th>
+                    <th>الاختيارات</th>
+                    <th>SKU</th>
+                    <th>السعر</th>
                     <th class="text-end">المخزون</th>
                   </tr>
                 </thead>
                 <tbody>
                   @foreach ($product->variants as $variant)
                     <tr>
-                      <td>{{ $variant->size }}</td>
-                      <td>{{ $variant->color }}</td>
+                      <td>{{ $variant->option_label }}</td>
+                      <td>{{ $variant->sku ?: '—' }}</td>
+                      <td>{{ number_format($variant->price ?? $product->price, 2) }} جنيه</td>
                       <td class="text-end">{{ $variant->stock }}</td>
                     </tr>
                   @endforeach
@@ -150,7 +152,12 @@
                     @foreach ($product->attributes as $attribute)
                       <tr>
                         <th class="ps-0">{{ $attribute->key }}</th>
-                        <td class="text-end pe-0">{{ $attribute->value }}</td>
+                        <td class="text-end pe-0">
+                          {{ $attribute->value }}
+                          @if ($attribute->numeric_value !== null)
+                            <span class="text-muted-custom">({{ $attribute->numeric_value }} {{ $attribute->unit }})</span>
+                          @endif
+                        </td>
                       </tr>
                     @endforeach
                   </tbody>

@@ -8,12 +8,16 @@
     $attributeRows = old('attributes', $product->attributes->map(fn($attribute) => [
       'key' => $attribute->key,
       'value' => $attribute->value,
+      'numeric_value' => $attribute->numeric_value,
+      'unit' => $attribute->unit,
     ])->all());
     $nextAttributeIndex = empty($attributeRows) ? 0 : max(array_keys($attributeRows)) + 1;
     $variantRows = old('variants', $product->variants->map(fn($variant) => [
-      'size' => $variant->size,
-      'color' => $variant->color,
+      'id' => $variant->id,
+      'sku' => $variant->sku,
+      'price' => $variant->price,
       'stock' => $variant->stock,
+      'options' => $variant->options->map(fn($option) => ['key' => $option->key, 'value' => $option->value])->values()->all(),
     ])->all());
   @endphp
 
@@ -114,7 +118,7 @@
               <div class="d-grid gap-2" id="attributes-list" data-next-index="{{ $nextAttributeIndex }}">
                 @forelse ($attributeRows as $index => $attribute)
                   <div class="row g-2 align-items-start product-attribute-row">
-                    <div class="col-md-5">
+                    <div class="col-md-3">
                       <input class="form-control @error("attributes.$index.key") is-invalid @enderror"
                         name="attributes[{{ $index }}][key]" type="text" value="{{ $attribute['key'] ?? '' }}"
                         placeholder="الخاصية، مثل الخامة" required>
@@ -122,7 +126,7 @@
                         <div class="invalid-feedback">{{ $message }}</div>
                       @enderror
                     </div>
-                    <div class="col-md-5">
+                    <div class="col-md-3">
                       <input class="form-control @error("attributes.$index.value") is-invalid @enderror"
                         name="attributes[{{ $index }}][value]" type="text" value="{{ $attribute['value'] ?? '' }}"
                         placeholder="القيمة، مثل قطن" required>
@@ -130,6 +134,8 @@
                         <div class="invalid-feedback">{{ $message }}</div>
                       @enderror
                     </div>
+                    <div class="col-md-2"><input class="form-control" name="attributes[{{ $index }}][numeric_value]" type="number" step="any" value="{{ $attribute['numeric_value'] ?? '' }}" placeholder="قيمة رقمية"></div>
+                    <div class="col-md-2"><input class="form-control" name="attributes[{{ $index }}][unit]" type="text" value="{{ $attribute['unit'] ?? '' }}" placeholder="الوحدة"></div>
                     <div class="col-md-2 d-grid">
                       <button class="btn btn-outline-danger remove-attribute" type="button">حذف</button>
                     </div>
@@ -178,14 +184,16 @@
 
         attributesList.insertAdjacentHTML('beforeend', `
               <div class="row g-2 align-items-start product-attribute-row">
-                <div class="col-md-5">
+                <div class="col-md-3">
                   <input class="form-control" name="attributes[${index}][key]" type="text"
                     placeholder="الخاصية، مثل الخامة" required>
                 </div>
-                <div class="col-md-5">
+                <div class="col-md-3">
                   <input class="form-control" name="attributes[${index}][value]" type="text"
                     placeholder="القيمة، مثل قطن" required>
                 </div>
+                <div class="col-md-2"><input class="form-control" name="attributes[${index}][numeric_value]" type="number" step="any" placeholder="قيمة رقمية"></div>
+                <div class="col-md-2"><input class="form-control" name="attributes[${index}][unit]" type="text" placeholder="الوحدة"></div>
                 <div class="col-md-2 d-grid">
                   <button class="btn btn-outline-danger remove-attribute" type="button">حذف</button>
                 </div>

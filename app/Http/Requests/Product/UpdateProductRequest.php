@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Product;
 
+use App\Support\ProductVariantOptions;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Validator;
 
@@ -21,16 +22,22 @@ class UpdateProductRequest extends FormRequest
             'price' => 'sometimes|numeric|min:0',
             'discount_amount' => 'sometimes|nullable|numeric|min:0|lte:price',
             'variants' => ['sometimes', 'required', 'array', 'min:1'],
-            'variants.*.size' => ['required', 'string', 'max:30'],
-            'variants.*.color' => ['required', 'string', 'max:50'],
+            'variants.*.id' => ['nullable', 'integer', 'distinct', 'exists:product_variants,id'],
+            'variants.*.sku' => ['nullable', 'string', 'max:100'],
+            'variants.*.price' => ['nullable', 'numeric', 'min:0'],
             'variants.*.stock' => ['required', 'integer', 'min:0'],
+            'variants.*.options' => ['nullable', 'array'],
+            'variants.*.options.*.key' => ['required', 'string', 'max:50'],
+            'variants.*.options.*.value' => ['required', 'string', 'max:100'],
             'product_pictures' => 'sometimes|nullable|array',
             'product_pictures.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
             'sub_categories' => 'sometimes|array|min:1',
             'sub_categories.*' => 'exists:sub_category,id',
             'attributes' => 'sometimes|array|nullable',
             'attributes.*.key' => 'required|string|max:50',
-            'attributes.*.value' => 'required|string|max:50',
+            'attributes.*.value' => 'required|string|max:255',
+            'attributes.*.numeric_value' => 'nullable|numeric',
+            'attributes.*.unit' => 'nullable|string|max:30',
         ];
     }
 
@@ -49,10 +56,19 @@ class UpdateProductRequest extends FormRequest
                     continue;
                 }
 
-                $key = mb_strtolower(trim($variant['size'] ?? '')).'|'.mb_strtolower(trim($variant['color'] ?? ''));
+                $options = ProductVariantOptions::normalize($variant['options'] ?? []);
+                $optionKeys = collect($variant['options'] ?? [])
+                    ->map(fn ($option) => mb_strtolower(trim((string) ($option['key'] ?? ''))))
+                    ->filter();
+
+                if ($optionKeys->duplicates()->isNotEmpty()) {
+                    $validator->errors()->add("variants.{$index}.options", 'لا يمكن تكرار اسم الاختيار داخل نفس النسخة.');
+                }
+
+                $key = ProductVariantOptions::signature($options);
 
                 if (isset($seen[$key])) {
-                    $validator->errors()->add("variants.{$index}.color", 'لا يمكن تكرار نفس المقاس واللون.');
+                    $validator->errors()->add("variants.{$index}.options", 'لا يمكن تكرار نفس تركيبة الاختيارات.');
                 }
 
                 $seen[$key] = true;

@@ -24,9 +24,11 @@ class ProductResource extends JsonResource
             'stock' => $this->stock,
             'variants' => $this->variants->map(fn ($variant) => [
                 'id' => $variant->id,
-                'size' => $variant->size,
-                'color' => $variant->color,
+                'sku' => $variant->sku,
+                'price' => (float) ($variant->price ?? $this->price),
                 'stock' => $variant->stock,
+                'options' => $variant->option_values,
+                'option_label' => $variant->option_label,
             ]),
             'cover_image' => url($this->cover_image),
             'sub_categories' => $this->sub_categories->map(function ($sub) {
@@ -52,6 +54,8 @@ class ProductResource extends JsonResource
                     'id' => $attr->id,
                     'key' => $attr->key,
                     'value' => $attr->value,
+                    'numeric_value' => $attr->numeric_value,
+                    'unit' => $attr->unit,
                 ];
             }),
         ];

@@ -5,10 +5,12 @@ namespace App\Services;
 use App\Exceptions\ProductAlreadyExistsException;
 use App\Models\Product;
 use App\Models\User;
+use App\Support\ProductVariantOptions;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 
 class ProductService
 {
@@ -45,12 +47,14 @@ class ProductService
             }
 
             $product->sub_categories()->sync($data['sub_categories'] ?? []);
-            $product->variants()->createMany($this->variantRows($data['variants']));
+            $this->syncVariants($product, $data['variants']);
 
             foreach ($data['attributes'] ?? [] as $attribute) {
                 $product->attributes()->create([
-                    'key' => strtolower($attribute['key']),
-                    'value' => $attribute['value'],
+                    'key' => mb_strtolower(trim($attribute['key'])),
+                    'value' => trim($attribute['value']),
+                    'numeric_value' => $attribute['numeric_value'] ?? null,
+                    'unit' => isset($attribute['unit']) ? trim($attribute['unit']) ?: null : null,
                 ]);
             }
 
@@ -93,8 +97,7 @@ class ProductService
             ])->all());
 
             if (array_key_exists('variants', $data)) {
-                $product->variants()->delete();
-                $product->variants()->createMany($this->variantRows($data['variants']));
+                $this->syncVariants($product, $data['variants']);
             }
 
             if (array_key_exists('sub_categories', $data)) {
@@ -106,8 +109,10 @@ class ProductService
 
                 foreach ($data['attributes'] ?? [] as $attribute) {
                     $product->attributes()->create([
-                        'key' => strtolower($attribute['key']),
-                        'value' => $attribute['value'],
+                        'key' => mb_strtolower(trim($attribute['key'])),
+                        'value' => trim($attribute['value']),
+                        'numeric_value' => $attribute['numeric_value'] ?? null,
+                        'unit' => isset($attribute['unit']) ? trim($attribute['unit']) ?: null : null,
                     ]);
                 }
             }
@@ -132,14 +137,61 @@ class ProductService
         return $product;
     }
 
-    private function variantRows(array $variants): array
+    private function syncVariants(Product $product, array $variants): void
     {
-        return collect($variants)
-            ->map(fn (array $variant): array => [
-                'size' => trim($variant['size']),
-                'color' => trim($variant['color']),
-                'stock' => $variant['stock'],
-            ])
-            ->all();
+        $existingVariants = $product->variants()->get()->keyBy('id');
+        $requestedIds = collect($variants)
+            ->pluck('id')
+            ->filter()
+            ->map(fn ($id): int => (int) $id)
+            ->values();
+
+        if ($requestedIds->diff($existingVariants->keys())->isNotEmpty()) {
+            throw ValidationException::withMessages([
+                'variants' => 'أحد اختيارات المنتج لا يخص هذا المنتج.',
+            ]);
+        }
+
+        $product->variants()->whereNotIn('id', $requestedIds)->delete();
+
+        if ($requestedIds->isNotEmpty()) {
+            $product->variants()->whereIn('id', $requestedIds)->update(['option_signature' => null]);
+        }
+
+        foreach ($variants as $variantData) {
+            $options = ProductVariantOptions::normalize($variantData['options'] ?? []);
+            $variantValues = [
+                'sku' => isset($variantData['sku']) ? trim($variantData['sku']) ?: null : null,
+                'size' => $options['size'] ?? null,
+                'color' => $options['color'] ?? null,
+                'price' => $this->priceOverride($variantData['price'] ?? null, $product->price),
+                'stock' => $variantData['stock'],
+                'option_signature' => ProductVariantOptions::signature($options),
+            ];
+
+            $variant = isset($variantData['id'])
+                ? $existingVariants->get((int) $variantData['id'])
+                : $product->variants()->make();
+            $variant->fill($variantValues)->save();
+            $variant->options()->delete();
+            $variant->options()->createMany(
+                collect($options)
+                    ->map(fn (string $value, string $key): array => compact('key', 'value'))
+                    ->values()
+                    ->all()
+            );
+        }
+    }
+
+    private function priceOverride(mixed $price, mixed $basePrice): ?string
+    {
+        if ($price === null || $price === '') {
+            return null;
+        }
+
+        $normalizedPrice = number_format((float) $price, 2, '.', '');
+        $normalizedBasePrice = number_format((float) $basePrice, 2, '.', '');
+
+        return $normalizedPrice === $normalizedBasePrice ? null : $normalizedPrice;
     }
 }

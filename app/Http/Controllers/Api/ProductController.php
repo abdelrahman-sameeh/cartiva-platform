@@ -26,7 +26,7 @@ class ProductController
             return response()->json([
                 'message' => $exception->getMessage(),
                 'data' => new ProductResource(
-                    $exception->product->load('sub_categories', 'pictures', 'attributes', 'variants')
+                    $exception->product->load('sub_categories', 'pictures', 'attributes', 'variants.options')
                 ),
             ], 409);
         }
@@ -34,7 +34,7 @@ class ProductController
         return response()->json([
             'message' => 'product created successfully',
             'data' => new ProductResource(
-                $product->load('sub_categories', 'pictures', 'attributes', 'variants')
+                $product->load('sub_categories', 'pictures', 'attributes', 'variants.options')
             ),
         ], 201);
 
@@ -72,7 +72,7 @@ class ProductController
         }
 
         return response()->json(
-            new ProductResource($product->load('attributes', 'sub_categories', 'pictures', 'variants')),
+            new ProductResource($product->load('attributes', 'sub_categories', 'pictures', 'variants.options')),
         );
     }
 
@@ -86,7 +86,7 @@ class ProductController
         $min_ratings = $request->query('min_ratings') ?? 0;
         $limit = $request->query('limit') ?? 10;
         $query = Product::query()
-            ->with('attributes', 'sub_categories.category', 'pictures', 'variants')
+            ->with('attributes', 'sub_categories.category', 'pictures', 'variants.options')
             ->withSum('variants', 'stock');
 
         if (! is_null($word)) {
@@ -140,13 +140,13 @@ class ProductController
             return response()->json([
                 'message' => $exception->getMessage(),
                 'data' => new ProductResource(
-                    $exception->product->load('sub_categories', 'pictures', 'attributes', 'variants')
+                    $exception->product->load('sub_categories', 'pictures', 'attributes', 'variants.options')
                 ),
             ], 409);
         }
 
         return response()->json(new ProductResource(
-            $product->load('sub_categories', 'pictures', 'attributes', 'variants')
+            $product->load('sub_categories', 'pictures', 'attributes', 'variants.options')
         ));
     }
 

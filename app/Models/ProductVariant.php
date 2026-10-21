@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\ProductVariantOptions;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -31,5 +32,16 @@ class ProductVariant extends Model
     public function options(): HasMany
     {
         return $this->hasMany(ProductVariantOption::class);
+    }
+
+    /** @return array<string, string> */
+    public function getOptionValuesAttribute(): array
+    {
+        return $this->options->pluck('value', 'key')->all();
+    }
+
+    public function getOptionLabelAttribute(): string
+    {
+        return ProductVariantOptions::label($this->option_values);
     }
 }

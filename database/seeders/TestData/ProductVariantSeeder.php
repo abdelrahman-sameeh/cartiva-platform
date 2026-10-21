@@ -3,6 +3,7 @@
 namespace Database\Seeders\TestData;
 
 use App\Models\Product;
+use App\Support\ProductVariantOptions;
 use Illuminate\Database\Seeder;
 
 class ProductVariantSeeder extends Seeder
@@ -62,7 +63,23 @@ class ProductVariantSeeder extends Seeder
 
         foreach ($variants as $productTitle => $rows) {
             $product = Product::query()->where('title', $productTitle)->firstOrFail();
-            $product->variants()->createMany($rows);
+
+            foreach ($rows as $row) {
+                $options = [
+                    'size' => $row['size'],
+                    'color' => $row['color'],
+                ];
+                $variant = $product->variants()->create([
+                    ...$row,
+                    'option_signature' => ProductVariantOptions::signature($options),
+                ]);
+                $variant->options()->createMany(
+                    collect($options)
+                        ->map(fn (string $value, string $key): array => compact('key', 'value'))
+                        ->values()
+                        ->all()
+                );
+            }
         }
     }
 }
