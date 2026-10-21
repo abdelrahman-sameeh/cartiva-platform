@@ -8,6 +8,7 @@ use App\Models\Coupon;
 use App\Models\Order\Order;
 use App\Models\Product;
 use App\Models\User;
+use App\Support\ProductVariantOptions;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -28,20 +29,23 @@ class OrderApiTest extends TestCase
         ])
             ->assertCreated()
             ->assertJsonPath('order.user_id', $buyer->id)
-            ->assertJsonPath('order.subtotal', '200.00')
-            ->assertJsonPath('order.discount', '20.00')
-            ->assertJsonPath('order.total_price', '180.00')
+            ->assertJsonPath('order.subtotal', '220.00')
+            ->assertJsonPath('order.discount', '22.00')
+            ->assertJsonPath('order.total_price', '198.00')
             ->assertJsonPath('order.sub_orders.0.seller_id', $seller->id)
             ->assertJsonPath('order.sub_orders.0.items.0.title', 'تيشيرت طلب API')
             ->json('order.id');
 
         $this->assertDatabaseHas('order_items', [
             'title' => 'تيشيرت طلب API',
-            'price_at_purchase' => 100,
-            'size' => 'L',
-            'color' => 'أسود',
+            'price_at_purchase' => 110,
+            'variant_sku' => 'PHONE-256-BLK',
+            'size' => null,
+            'color' => null,
             'quantity' => 2,
         ]);
+        $orderItem = Order::query()->findOrFail($orderId)->subOrders()->firstOrFail()->items()->firstOrFail();
+        $this->assertSame(['color' => 'أسود', 'storage' => '256 GB'], $orderItem->variant_options);
         $this->assertDatabaseHas('products', [
             'id' => $product->id,
             'sold_count' => 2,
@@ -118,14 +122,19 @@ class OrderApiTest extends TestCase
             'title' => 'تيشيرت طلب API',
             'description' => 'وصف المنتج المستخدم في اختبار إنشاء الطلب.',
             'price' => 100,
-            'discount_amount' => 0,
+            'discount_amount' => 10,
             'seller_id' => $seller->id,
             'is_active' => true,
         ]);
         $variant = $product->variants()->create([
-            'size' => 'L',
-            'color' => 'أسود',
+            'sku' => 'PHONE-256-BLK',
+            'price' => 120,
             'stock' => 10,
+            'option_signature' => ProductVariantOptions::signature(['storage' => '256 GB', 'color' => 'أسود']),
+        ]);
+        $variant->options()->createMany([
+            ['key' => 'storage', 'value' => '256 GB'],
+            ['key' => 'color', 'value' => 'أسود'],
         ]);
         $address = Address::create([
             'user_id' => $buyer->id,

@@ -65,9 +65,6 @@
                       $selectableVariants = collect($item['product']['variants'])
                         ->filter(fn($variant) => $variant['stock'] > 0 || $variant['id'] === $item['variant']['id'])
                         ->values();
-                      $currentColorVariants = $selectableVariants
-                        ->where('color', $item['variant']['color'])
-                        ->values();
                     @endphp
                     <article class="row g-3 align-items-center border-bottom pb-3">
                       <div class="col-4 col-md-2">
@@ -88,7 +85,8 @@
                             {{ $item['product']['title'] }}
                           </a>
                         </h3>
-                        <span class="text-brand fw-semibold">{{ number_format($item['product']['price'], 2) }} جنيه</span>
+                        <span class="text-brand fw-semibold">{{ number_format($item['unit_price'], 2) }} جنيه</span>
+                        <small class="text-muted-custom d-block">{{ $item['variant']['label'] }}</small>
                       </div>
                       <div class="col-12 col-md-5">
                         <form class="cart-variant-form row g-2 align-items-end p-3" method="POST"
@@ -98,22 +96,13 @@
                           @method('PUT')
                           <input class="selected-variant-id" name="product_variant_id" type="hidden"
                             value="{{ $item['variant']['id'] }}">
-                          <div class="col-6">
-                            <label class="form-label small mb-1">اللون</label>
-                            <select class="form-select cart-variant-color" required>
-                              @foreach ($selectableVariants->pluck('color')->unique() as $color)
-                                <option value="{{ $color }}" @selected($color === $item['variant']['color'])>
-                                  {{ $color }}
-                                </option>
-                              @endforeach
-                            </select>
-                          </div>
-                          <div class="col-6">
-                            <label class="form-label small mb-1">المقاس</label>
-                            <select class="form-select cart-variant-size" required>
-                              @foreach ($currentColorVariants as $variant)
-                                <option value="{{ $variant['size'] }}" @selected($variant['id'] === $item['variant']['id'])>
-                                  {{ $variant['size'] }} ({{ $variant['stock'] }} متاح)
+                          <div class="col-12">
+                            <label class="form-label small mb-1">اختيار المنتج</label>
+                            <select class="form-select cart-variant-selector" required>
+                              @foreach ($selectableVariants as $variant)
+                                <option value="{{ $variant['id'] }}" @selected($variant['id'] === $item['variant']['id'])>
+                                  {{ $variant['label'] }} — {{ number_format($variant['price'], 2) }} جنيه
+                                  ({{ $variant['stock'] }} متاح)
                                 </option>
                               @endforeach
                             </select>
@@ -240,8 +229,7 @@
       document.querySelectorAll('.cart-variant-form').forEach(form => {
         const variants = JSON.parse(form.dataset.variants);
         const variantInput = form.querySelector('.selected-variant-id');
-        const colorSelect = form.querySelector('.cart-variant-color');
-        const sizeSelect = form.querySelector('.cart-variant-size');
+        const variantSelect = form.querySelector('.cart-variant-selector');
         const quantityInput = form.querySelector('.cart-variant-quantity');
         const updateButton = form.querySelector('.cart-update-button');
         const stockStatus = form.querySelector('.cart-variant-stock');
@@ -270,9 +258,7 @@
         };
 
         const syncVariant = () => {
-          const variant = variants.find(item =>
-            item.color === colorSelect.value && item.size === sizeSelect.value
-          );
+          const variant = variants.find(item => Number(item.id) === Number(variantSelect.value));
 
           if (!variant) {
             return;
@@ -284,23 +270,7 @@
           syncFormState(variant);
         };
 
-        const renderSizes = preferredVariantId => {
-          const sizes = variants.filter(variant => variant.color === colorSelect.value);
-          const selectedVariant = sizes.find(variant => variant.id === preferredVariantId) ?? sizes[0];
-
-          sizeSelect.replaceChildren(...sizes.map(variant => {
-            const option = document.createElement('option');
-            option.value = variant.size;
-            option.textContent = `${variant.size} (${variant.stock} متاح)`;
-            option.selected = variant.id === selectedVariant?.id;
-
-            return option;
-          }));
-          syncVariant();
-        };
-
-        colorSelect.addEventListener('change', () => renderSizes());
-        sizeSelect.addEventListener('change', syncVariant);
+        variantSelect.addEventListener('change', syncVariant);
         quantityInput.addEventListener('input', () => {
           const variant = variants.find(item => Number(item.id) === Number(variantInput.value));
 
@@ -323,7 +293,8 @@
           updateButton.disabled = true;
           updateButton.textContent = 'جارٍ الحفظ...';
         });
-        renderSizes(Number(variantInput.value));
+        variantSelect.value = variantInput.value;
+        syncVariant();
       });
     });
   </script>

@@ -3,6 +3,7 @@
 namespace App\Models\Order;
 
 use App\Models\Product;
+use App\Support\ProductVariantOptions;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -14,8 +15,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $description
  * @property string|null $cover_image
  * @property string $price_at_purchase
- * @property string $size
- * @property string $color
+ * @property string|null $variant_sku
+ * @property array<string, string>|null $variant_options
  * @property int $quantity
  * @property \Illuminate\Support\Carbon|null $created_at_snapshot
  * @property-read SubOrder $subOrder
@@ -67,5 +68,10 @@ class OrderItem extends Model
     public function pictures()
     {
         return $this->hasMany(OrderItemPicture::class);
+    }
+
+    public function getVariantLabelAttribute(): string
+    {
+        return ProductVariantOptions::label($this->variant_options ?? []);
     }
 }

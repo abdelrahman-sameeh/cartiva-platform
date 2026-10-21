@@ -22,8 +22,9 @@
             ?? $availableVariants->first();
         $variantOptions = $availableVariants->map(fn($variant) => [
             'id' => $variant->id,
-            'size' => $variant->size,
-            'color' => $variant->color,
+            'label' => $variant->option_label,
+            'price' => (float) ($variant->price ?? $product->price),
+            'salePrice' => $variant->priceAfterDiscount($product),
             'stock' => $variant->stock,
         ])->values();
     @endphp
@@ -76,15 +77,15 @@
             <div class="col-lg-5">
                 <div class="dashboard-card card border-0 mb-4">
                     <div class="card-body p-4">
-                        @if ($product->discount_amount > 0)
+                        @if ($product->discount_amount > 0 && $selectedVariant)
                             <span class="badge text-bg-danger mb-2">خصم {{ number_format($product->discount_amount, 2) }}
                                 جنيه</span>
-                            <span class="text-muted-custom text-decoration-line-through d-block">
-                                {{ number_format($product->price, 2) }} جنيه
+                            <span class="text-muted-custom text-decoration-line-through d-block" id="variant-original-price">
+                                {{ number_format($selectedVariant->price ?? $product->price, 2) }} جنيه
                             </span>
                         @endif
-                        <strong class="text-brand fs-2 d-block mb-4">
-                            {{ number_format($product->price_after_discount, 2) }} جنيه
+                        <strong class="text-brand fs-2 d-block mb-4" id="variant-price">
+                            {{ number_format($selectedVariant?->priceAfterDiscount($product) ?? $product->price_after_discount, 2) }} جنيه
                         </strong>
 
                         <div class="d-flex justify-content-between py-3 border-top">
@@ -102,7 +103,7 @@
                                 <div class="d-flex flex-wrap gap-2">
                                     @foreach ($availableVariants as $variant)
                                         <span class="badge text-bg-light border text-dark">
-                                            {{ $variant->size }} — {{ $variant->color }}
+                                            {{ $variant->option_label }}
                                         </span>
                                     @endforeach
                                 </div>
@@ -116,34 +117,26 @@
                                     @csrf
                                     <div>
                                         <h2 class="h5 fw-bold mb-1">اختار المناسب ليك</h2>
-                                        <p class="text-muted-custom small mb-0">المقاسات المعروضة بتتغير حسب اللون.</p>
+                                        <p class="text-muted-custom small mb-0">حدد نسخة المنتج المطلوبة ثم الكمية.</p>
                                     </div>
-                                    <div class="row g-2">
-                                        <div class="col-sm-6">
+                                    @if ($availableVariants->count() > 1)
+                                        <div>
                                             <label class="form-label fw-semibold d-flex align-items-center gap-2"
-                                                for="variant-color">
+                                                for="variant-selector">
                                                 <span class="option-step">1</span>
-                                                اللون
+                                                الاختيار
                                             </label>
                                             <select class="form-select @error('product_variant_id') is-invalid @enderror"
-                                                id="variant-color" required>
-                                                @foreach ($availableVariants->pluck('color')->unique() as $color)
-                                                    <option value="{{ $color }}" @selected($selectedVariant?->color === $color)>
-                                                        {{ $color }}
-                                                        ({{ $availableVariants->where('color', $color)->count() }} مقاس)
+                                                id="variant-selector" required>
+                                                @foreach ($availableVariants as $variant)
+                                                    <option value="{{ $variant->id }}" @selected($selectedVariant?->id === $variant->id)>
+                                                        {{ $variant->option_label }} — {{ number_format($variant->priceAfterDiscount($product), 2) }} جنيه
+                                                        ({{ $variant->stock }} متاح)
                                                     </option>
                                                 @endforeach
                                             </select>
                                         </div>
-                                        <div class="col-sm-6">
-                                            <label class="form-label fw-semibold d-flex align-items-center gap-2"
-                                                for="variant-size">
-                                                <span class="option-step">2</span>
-                                                المقاس
-                                            </label>
-                                            <select class="form-select" id="variant-size" required></select>
-                                        </div>
-                                    </div>
+                                    @endif
                                     <input id="product_variant_id" name="product_variant_id" type="hidden"
                                         value="{{ $selectedVariant?->id }}">
 
@@ -156,7 +149,7 @@
                                     <div>
                                         <label class="form-label fw-semibold d-flex align-items-center gap-2"
                                             for="variant-quantity">
-                                            <span class="option-step">3</span>
+                                            <span class="option-step">{{ $availableVariants->count() > 1 ? 2 : 1 }}</span>
                                             الكمية
                                         </label>
                                         <div class="variant-quantity-picker">
@@ -285,14 +278,15 @@
         document.addEventListener('DOMContentLoaded', () => {
             const variants = @json($variantOptions);
             const variantInput = document.getElementById('product_variant_id');
-            const colorSelect = document.getElementById('variant-color');
-            const sizeSelect = document.getElementById('variant-size');
+            const variantSelect = document.getElementById('variant-selector');
             const quantityInput = document.getElementById('variant-quantity');
             const summary = document.getElementById('variant-summary');
+            const price = document.getElementById('variant-price');
+            const originalPrice = document.getElementById('variant-original-price');
             const form = document.getElementById('product-cart-form');
             const submitButton = document.getElementById('add-to-cart-button');
 
-            if (!variantInput || !colorSelect || !sizeSelect || !quantityInput || !summary || !form || !submitButton) {
+            if (!variantInput || !quantityInput || !summary || !form || !submitButton) {
                 return;
             }
 
@@ -302,36 +296,24 @@
             );
 
             const syncVariant = () => {
-                const variant = variants.find(item =>
-                    item.color === colorSelect.value && item.size === sizeSelect.value
-                );
+                const selectedId = Number(variantSelect?.value ?? variantInput.value);
+                const variant = variants.find(item => Number(item.id) === selectedId) ?? variants[0];
 
                 if (!variant) {
                     return;
                 }
 
                 variantInput.value = variant.id;
+                if (variantSelect) variantSelect.value = variant.id;
                 quantityInput.max = variant.stock;
                 quantityInput.value = clampQuantity(quantityInput.value);
-                summary.textContent = `اختيارك: ${variant.color}، مقاس ${variant.size} — متاح ${variant.stock} قطعة`;
+                summary.textContent = `${variant.label} — متاح ${variant.stock} قطعة`;
                 summary.classList.toggle('low-stock', variant.stock <= 3);
+                if (price) price.textContent = `${variant.salePrice.toFixed(2)} جنيه`;
+                if (originalPrice) originalPrice.textContent = `${variant.price.toFixed(2)} جنيه`;
             };
 
-            const renderSizes = preferredSize => {
-                const sizes = variants.filter(variant => variant.color === colorSelect.value);
-                sizeSelect.replaceChildren(...sizes.map(variant => {
-                    const option = document.createElement('option');
-                    option.value = variant.size;
-                    option.textContent = `${variant.size} (${variant.stock} متاح)`;
-                    option.selected = variant.size === preferredSize;
-
-                    return option;
-                }));
-                syncVariant();
-            };
-
-            colorSelect.addEventListener('change', () => renderSizes());
-            sizeSelect.addEventListener('change', syncVariant);
+            variantSelect?.addEventListener('change', syncVariant);
             quantityInput.addEventListener('change', () => {
                 quantityInput.value = clampQuantity(quantityInput.value);
             });
@@ -345,7 +327,7 @@
                 submitButton.disabled = true;
                 submitButton.textContent = 'جارٍ الإضافة...';
             });
-            renderSizes(@json($selectedVariant?->size));
+            syncVariant();
         });
     </script>
 @endpush

@@ -47,6 +47,8 @@ final class ProductVariantOptions
             return 'المنتج الأساسي';
         }
 
+        ksort($options, SORT_STRING);
+
         return collect($options)
             ->map(fn (string $value, string $key): string => "{$key}: {$value}")
             ->implode(' • ');

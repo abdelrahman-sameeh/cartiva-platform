@@ -112,7 +112,7 @@ class CartWebTest extends TestCase
         $this->assertDatabaseMissing('cart_items', ['id' => $item->id]);
     }
 
-    public function test_buyer_can_change_size_and_color_inside_the_cart(): void
+    public function test_buyer_can_change_product_variant_inside_the_cart(): void
     {
         $buyer = $this->createBuyer('change-variant@example.com');
         $product = $this->createProduct($this->createSeller(), 'قميص متعدد المقاسات');
@@ -146,8 +146,7 @@ class CartWebTest extends TestCase
         $this->actingAs($buyer)
             ->get(route('cart.index'))
             ->assertOk()
-            ->assertSee('cart-variant-color', false)
-            ->assertSee('cart-variant-size', false)
+            ->assertSee('cart-variant-selector', false)
             ->assertSee('cart-change-status', false)
             ->assertSee('حفظ التغيير')
             ->assertSee('أزرق')

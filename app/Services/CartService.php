@@ -22,7 +22,7 @@ class CartService
         $cart = $user->cart()->firstOrCreate();
 
         foreach ($items as $itemData) {
-            $variant = ProductVariant::query()->with('product')->findOrFail($itemData['variant_id']);
+            $variant = ProductVariant::query()->with(['options', 'product'])->findOrFail($itemData['variant_id']);
             $product = $variant->product;
             $item = $cart->items()->where('product_variant_id', $variant->id)->first();
             $quantity = ($item?->quantity ?? 0) + $itemData['quantity'];
@@ -46,14 +46,14 @@ class CartService
     public function updateItem(User $user, int $itemId, int $quantity, ?int $variantId = null): CartItem
     {
         $cart = $this->requireCart($user);
-        $item = $cart->items()->with('variant.product')->findOrFail($itemId);
+        $item = $cart->items()->with('variant.options', 'variant.product')->findOrFail($itemId);
         $variant = $variantId
-            ? ProductVariant::query()->with('product')->findOrFail($variantId)
+            ? ProductVariant::query()->with(['options', 'product'])->findOrFail($variantId)
             : $item->variant;
 
         if ($variant->product_id !== $item->product_id) {
             throw ValidationException::withMessages([
-                'product_variant_id' => 'المقاس واللون المختاران لا يخصان هذا المنتج.',
+                'product_variant_id' => 'الاختيار المحدد لا يخص هذا المنتج.',
             ]);
         }
 
@@ -64,7 +64,7 @@ class CartService
 
         if ($variantAlreadyExists) {
             throw ValidationException::withMessages([
-                'product_variant_id' => 'هذا المقاس واللون موجودان بالفعل في السلة.',
+                'product_variant_id' => 'هذا الاختيار موجود بالفعل في السلة.',
             ]);
         }
 
@@ -74,7 +74,7 @@ class CartService
             'quantity' => $quantity,
         ]);
 
-        return $item->refresh()->load('variant.product');
+        return $item->refresh()->load('variant.options', 'variant.product');
     }
 
     public function removeItem(User $user, int $itemId): void
@@ -147,7 +147,7 @@ class CartService
             ];
         }
 
-        $cart->load(['items.variant.product', 'coupons.coupon']);
+        $cart->load(['items.variant.options', 'items.variant.product', 'coupons.coupon']);
         $errors = [];
 
         foreach ($cart->items as $item) {
@@ -165,7 +165,7 @@ class CartService
                     'item_id' => $item->id,
                     'product_id' => $item->product_id,
                     'type' => 'insufficient_stock',
-                    'message' => "المتاح من المقاس واللون المختارين {$item->variant->stock} فقط.",
+                    'message' => "المتاح من اختيار {$item->variant->option_label} هو {$item->variant->stock} فقط.",
                     'requested_quantity' => $item->quantity,
                     'available_quantity' => $item->variant->stock,
                 ];
@@ -196,7 +196,11 @@ class CartService
             return $this->emptyData();
         }
 
-        $cart->load(['items.variant.product.variants', 'coupons.coupon']);
+        $cart->load([
+            'items.variant.options',
+            'items.variant.product.variants.options',
+            'coupons.coupon',
+        ]);
         $groups = [];
 
         foreach ($cart->items as $item) {
@@ -210,24 +214,29 @@ class CartService
             $groups[$sellerId]['items'][] = [
                 'id' => $item->id,
                 'quantity' => $item->quantity,
+                'unit_price' => $item->variant->priceAfterDiscount(),
                 'variant' => [
                     'id' => $item->variant->id,
-                    'size' => $item->variant->size,
-                    'color' => $item->variant->color,
+                    'sku' => $item->variant->sku,
+                    'options' => $item->variant->option_values,
+                    'label' => $item->variant->option_label,
+                    'price' => $item->variant->priceAfterDiscount(),
                     'stock' => $item->variant->stock,
                 ],
                 'product' => [
                     'id' => $product->id,
                     'title' => $product->title,
                     'slug' => $product->slug,
-                    'price' => (float) $product->price,
+                    'price' => $product->price_after_discount,
                     'cover_image' => $product->cover_image
                         ? $product->cover_image_url
                         : null,
                     'variants' => $product->variants->map(fn (ProductVariant $variant): array => [
                         'id' => $variant->id,
-                        'size' => $variant->size,
-                        'color' => $variant->color,
+                        'sku' => $variant->sku,
+                        'options' => $variant->option_values,
+                        'label' => $variant->option_label,
+                        'price' => $variant->priceAfterDiscount($product),
                         'stock' => $variant->stock,
                     ])->values()->all(),
                 ],
@@ -255,7 +264,7 @@ class CartService
 
         foreach ($groups as &$group) {
             $groupSubtotal = collect($group['items'])->sum(
-                fn (array $item): float => $item['quantity'] * $item['product']['price']
+                fn (array $item): float => $item['quantity'] * $item['unit_price']
             );
             $groupDiscount = $group['coupon'] && $group['coupon']['is_valid']
                 ? $groupSubtotal * ($group['coupon']['percentage'] / 100)
@@ -298,7 +307,7 @@ class CartService
 
         if ($quantity > $variant->stock) {
             throw ValidationException::withMessages([
-                'quantity' => "الكمية المتاحة من {$product->title} بالمقاس {$variant->size} واللون {$variant->color} هي {$variant->stock} فقط.",
+                'quantity' => "الكمية المتاحة من {$product->title} ({$variant->option_label}) هي {$variant->stock} فقط.",
             ]);
         }
     }

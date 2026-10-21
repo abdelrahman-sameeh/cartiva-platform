@@ -191,7 +191,7 @@ class StorefrontController extends Controller
         abort_unless($product->is_active, 404);
 
         return view('storefront.products.show', [
-            'product' => $product->load('attributes', 'sub_categories.category', 'pictures', 'variants'),
+            'product' => $product->load('attributes', 'sub_categories.category', 'pictures', 'variants.options'),
             'storeSeller' => $seller,
         ]);
     }

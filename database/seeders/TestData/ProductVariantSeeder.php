@@ -70,7 +70,7 @@ class ProductVariantSeeder extends Seeder
                     'color' => $row['color'],
                 ];
                 $variant = $product->variants()->create([
-                    ...$row,
+                    'stock' => $row['stock'],
                     'option_signature' => ProductVariantOptions::signature($options),
                 ]);
                 $variant->options()->createMany(

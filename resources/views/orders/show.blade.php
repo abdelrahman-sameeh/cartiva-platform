@@ -47,7 +47,10 @@
                   @endif
                   <div class="flex-grow-1">
                     <h3 class="h6 fw-bold mb-1">{{ $item->title }}</h3>
-                    <small class="text-muted-custom d-block">المقاس: {{ $item->size }} — اللون: {{ $item->color }}</small>
+                    <small class="text-muted-custom d-block">{{ $item->variant_label }}</small>
+                    @if ($item->variant_sku)
+                      <small class="text-muted-custom d-block">SKU: {{ $item->variant_sku }}</small>
+                    @endif
                     <span class="text-muted-custom">{{ $item->quantity }} ×
                       {{ number_format((float) $item->price_at_purchase, 2) }} جنيه</span>
                   </div>

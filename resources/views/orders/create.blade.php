@@ -73,10 +73,9 @@
                   <div class="d-flex justify-content-between gap-3 mb-3">
                     <span>
                       {{ $item['product']['title'] }} × {{ $item['quantity'] }}
-                      <small class="text-muted-custom d-block">{{ $item['variant']['size'] }} /
-                        {{ $item['variant']['color'] }}</small>
+                      <small class="text-muted-custom d-block">{{ $item['variant']['label'] }}</small>
                     </span>
-                    <strong>{{ number_format($item['product']['price'] * $item['quantity'], 2) }} جنيه</strong>
+                    <strong>{{ number_format($item['unit_price'] * $item['quantity'], 2) }} جنيه</strong>
                   </div>
                 @endforeach
               @endforeach

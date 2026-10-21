@@ -37,11 +37,28 @@ class ProductVariant extends Model
     /** @return array<string, string> */
     public function getOptionValuesAttribute(): array
     {
-        return $this->options->pluck('value', 'key')->all();
+        $options = $this->options->pluck('value', 'key')->all();
+
+        if ($options !== []) {
+            return $options;
+        }
+
+        return array_filter([
+            'size' => $this->size,
+            'color' => $this->color,
+        ], fn ($value): bool => $value !== null && $value !== '');
     }
 
     public function getOptionLabelAttribute(): string
     {
         return ProductVariantOptions::label($this->option_values);
+    }
+
+    public function priceAfterDiscount(?Product $product = null): float
+    {
+        $product ??= $this->product;
+        $basePrice = (float) ($this->price ?? $product->price);
+
+        return max(0, round($basePrice - (float) $product->discount_amount, 2));
     }
 }

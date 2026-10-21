@@ -37,7 +37,7 @@ class OrderService
 
         return DB::transaction(function () use ($customer, $data): Order {
             $cart = $customer->cart()
-                ->with(['items.variant.product.pictures', 'coupons.coupon'])
+                ->with(['items.variant.options', 'items.variant.product.pictures', 'coupons.coupon'])
                 ->lockForUpdate()
                 ->first();
 
@@ -47,7 +47,7 @@ class OrderService
 
             foreach ($cart->items as $item) {
                 $variant = ProductVariant::query()
-                    ->with('product.pictures')
+                    ->with(['options', 'product.pictures'])
                     ->lockForUpdate()
                     ->find($item->product_variant_id);
                 $product = $variant?->product;
@@ -60,7 +60,7 @@ class OrderService
 
                 if ($variant->stock < $item->quantity) {
                     throw ValidationException::withMessages([
-                        'cart' => "الكمية المتاحة من {$product->title} بالمقاس {$variant->size} واللون {$variant->color} هي {$variant->stock} فقط.",
+                        'cart' => "الكمية المتاحة من {$product->title} ({$variant->option_label}) هي {$variant->stock} فقط.",
                     ]);
                 }
 
@@ -77,7 +77,7 @@ class OrderService
 
             foreach ($groups as $sellerId => $items) {
                 $subtotal = round($items->sum(
-                    fn ($item): float => (float) $item->product->price * $item->quantity
+                    fn ($item): float => $item->variant->priceAfterDiscount() * $item->quantity
                 ), 2);
                 $coupon = $couponsBySeller[$sellerId] ?? null;
                 $discount = $coupon
@@ -127,9 +127,11 @@ class OrderService
                         'slug' => $product->slug,
                         'description' => $product->description,
                         'cover_image' => $product->cover_image,
-                        'price_at_purchase' => $product->price,
-                        'size' => $item->variant->size,
-                        'color' => $item->variant->color,
+                        'price_at_purchase' => $item->variant->priceAfterDiscount(),
+                        'variant_sku' => $item->variant->sku,
+                        'variant_options' => $item->variant->option_values,
+                        'size' => null,
+                        'color' => null,
                         'quantity' => $item->quantity,
                         'created_at_snapshot' => $product->created_at,
                     ]);

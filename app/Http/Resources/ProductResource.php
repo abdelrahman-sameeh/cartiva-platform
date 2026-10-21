@@ -26,6 +26,10 @@ class ProductResource extends JsonResource
                 'id' => $variant->id,
                 'sku' => $variant->sku,
                 'price' => (float) ($variant->price ?? $this->price),
+                'price_after_discount' => max(
+                    0,
+                    round((float) ($variant->price ?? $this->price) - (float) $this->discount_amount, 2)
+                ),
                 'stock' => $variant->stock,
                 'options' => $variant->option_values,
                 'option_label' => $variant->option_label,

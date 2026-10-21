@@ -5,6 +5,7 @@ namespace Tests\Feature\Api;
 use App\Enums\RoleName;
 use App\Models\Product;
 use App\Models\User;
+use App\Support\ProductVariantOptions;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
@@ -30,14 +31,18 @@ class CartApiTest extends TestCase
         $this->getJson('/api/cart')
             ->assertOk()
             ->assertJsonPath('cart.groups.0.items.0.product.title', 'منتج API')
-            ->assertJsonPath('cart.groups.0.items.0.variant.size', 'M')
-            ->assertJsonPath('cart.groups.0.items.0.variant.color', 'أسود')
+            ->assertJsonPath('cart.groups.0.items.0.variant.options.storage', '128 GB')
+            ->assertJsonPath('cart.groups.0.items.0.variant.options.color', 'أسود')
+            ->assertJsonPath('cart.groups.0.items.0.variant.label', 'color: أسود • storage: 128 GB')
             ->assertJsonCount(1, 'cart.groups.0.items.0.product.variants');
 
         $largeBlue = $product->variants()->create([
-            'size' => 'L',
-            'color' => 'أزرق',
             'stock' => 3,
+            'option_signature' => ProductVariantOptions::signature(['storage' => '256 GB', 'color' => 'أزرق']),
+        ]);
+        $largeBlue->options()->createMany([
+            ['key' => 'storage', 'value' => '256 GB'],
+            ['key' => 'color', 'value' => 'أزرق'],
         ]);
         $cartItem = $buyer->cart()->firstOrFail()->items()->firstOrFail();
 
@@ -87,10 +92,13 @@ class CartApiTest extends TestCase
             'seller_id' => $seller->id,
             'is_active' => true,
         ]);
-        $product->variants()->create([
-            'size' => 'M',
-            'color' => 'أسود',
+        $variant = $product->variants()->create([
             'stock' => 10,
+            'option_signature' => ProductVariantOptions::signature(['storage' => '128 GB', 'color' => 'أسود']),
+        ]);
+        $variant->options()->createMany([
+            ['key' => 'storage', 'value' => '128 GB'],
+            ['key' => 'color', 'value' => 'أسود'],
         ]);
 
         return $product;

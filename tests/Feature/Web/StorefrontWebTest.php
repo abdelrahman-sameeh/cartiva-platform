@@ -6,6 +6,7 @@ use App\Enums\RoleName;
 use App\Models\Category;
 use App\Models\SubCategory;
 use App\Models\User;
+use App\Support\ProductVariantOptions;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -224,7 +225,7 @@ class StorefrontWebTest extends TestCase
             ->assertNotFound();
     }
 
-    public function test_buyer_selects_color_and_size_separately_before_adding_to_cart(): void
+    public function test_buyer_selects_a_generic_variant_before_adding_to_cart(): void
     {
         $seller = $this->createSeller();
         $buyer = User::create([
@@ -235,25 +236,33 @@ class StorefrontWebTest extends TestCase
         ]);
         $buyer->syncRoles(RoleName::USER);
         $product = $seller->products()->create([
-            'title' => 'قميص ملون',
-            'description' => 'قميص متاح بألوان ومقاسات مختلفة.',
+            'title' => 'هاتف متعدد السعات',
+            'description' => 'هاتف متاح بسعات وألوان مختلفة.',
             'price' => 250,
             'discount_amount' => 0,
         ]);
-        $product->variants()->createMany([
-            ['size' => 'M', 'color' => 'أسود', 'stock' => 3],
-            ['size' => 'L', 'color' => 'أزرق', 'stock' => 2],
-        ]);
+        foreach ([['128 GB', 'أسود', 3], ['256 GB', 'أزرق', 2]] as [$storage, $color, $stock]) {
+            $options = ['storage' => $storage, 'color' => $color];
+            $variant = $product->variants()->create([
+                'stock' => $stock,
+                'option_signature' => ProductVariantOptions::signature($options),
+            ]);
+            $variant->options()->createMany([
+                ['key' => 'storage', 'value' => $storage],
+                ['key' => 'color', 'value' => $color],
+            ]);
+        }
 
         $this->actingAs($buyer)
             ->get(route('stores.products.show', [$seller, $product]))
             ->assertOk()
-            ->assertSee('id="variant-color"', false)
-            ->assertSee('id="variant-size"', false)
+            ->assertSee('id="variant-selector"', false)
             ->assertSee('name="product_variant_id"', false)
             ->assertSee('اختار المناسب ليك')
             ->assertSee('id="variant-summary"', false)
             ->assertSee('data-action="increase"', false)
+            ->assertSee('128 GB')
+            ->assertSee('256 GB')
             ->assertSee('أسود')
             ->assertSee('أزرق');
     }

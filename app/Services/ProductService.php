@@ -162,8 +162,6 @@ class ProductService
             $options = ProductVariantOptions::normalize($variantData['options'] ?? []);
             $variantValues = [
                 'sku' => isset($variantData['sku']) ? trim($variantData['sku']) ?: null : null,
-                'size' => $options['size'] ?? null,
-                'color' => $options['color'] ?? null,
                 'price' => $this->priceOverride($variantData['price'] ?? null, $product->price),
                 'stock' => $variantData['stock'],
                 'option_signature' => ProductVariantOptions::signature($options),
