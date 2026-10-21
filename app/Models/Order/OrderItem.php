@@ -38,6 +38,8 @@ class OrderItem extends Model
         'description',
         'cover_image',
         'price_at_purchase',
+        'variant_sku',
+        'variant_options',
         'size',
         'color',
         'quantity',
@@ -46,6 +48,7 @@ class OrderItem extends Model
 
     protected $casts = [
         'price_at_purchase' => 'decimal:2',
+        'variant_options' => 'array',
         'created_at_snapshot' => 'datetime',
     ];
 
