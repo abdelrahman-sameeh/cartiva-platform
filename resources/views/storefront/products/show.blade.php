@@ -230,7 +230,7 @@
     <style>
         .product-options {
             padding: 1rem;
-            border: 1px solid rgba(91, 76, 240, .16);
+            border: 1px solid rgba(15, 118, 110, .16);
             border-radius: 1rem;
             background: rgba(238, 236, 255, .42);
         }

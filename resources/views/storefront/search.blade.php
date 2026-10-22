@@ -32,17 +32,25 @@
         ])->filter()->count();
     @endphp
 
-    <div class="container py-5">
-        <div class="mb-4">
+    <div class="container py-5 search-page">
+        <div class="search-page-heading mb-4">
             <a class="text-brand text-decoration-none fw-semibold" href="{{ $storeHomeUrl }}">العودة للرئيسية</a>
             <div class="d-flex flex-column flex-md-row align-items-md-end justify-content-between gap-3 mt-2">
                 <div>
                     <h1 class="fw-bold mb-1">{{ $isSellerStore ? 'ابحث في متجر ' . $storeName : 'ابحث في المنتجات' }}</h1>
                     <p class="text-muted-custom mb-0">{{ $isSellerStore ? 'كل النتائج والفلاتر محصورة في منتجات هذا البائع.' : 'استخدم البحث والفلاتر للوصول للمنتج المناسب.' }}</p>
                 </div>
-                <span class="badge rounded-pill bg-primary-subtle text-primary-emphasis px-3 py-2">
-                    {{ $products->total() }} نتيجة
-                </span>
+                <div class="d-flex align-items-center gap-2">
+                    <button class="btn btn-light d-lg-none" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#searchFilters" aria-expanded="false" aria-controls="searchFilters">
+                        <i class="bi bi-sliders" aria-hidden="true"></i>
+                        الفلاتر
+                        @if ($activeFilters > 0)
+                            <span class="badge text-bg-primary">{{ $activeFilters }}</span>
+                        @endif
+                    </button>
+                    <span class="results-count">{{ $products->total() }} نتيجة</span>
+                </div>
             </div>
         </div>
 
@@ -60,7 +68,8 @@
 
         <div class="row g-4 align-items-start">
             <aside class="col-lg-3">
-                <form class="dashboard-card card border-0" method="GET" action="{{ $storeSearchUrl }}">
+                <form class="dashboard-card card border-0 collapse d-lg-block search-filters" id="searchFilters"
+                    method="GET" action="{{ $storeSearchUrl }}">
                     <div class="card-body p-4">
                         <div class="d-flex align-items-center justify-content-between mb-4">
                             <h2 class="h5 fw-bold mb-0">تصفية النتائج</h2>
@@ -180,48 +189,8 @@
                 @else
                     <div class="row g-4">
                         @foreach ($products as $product)
-                            <div class="col-md-6 col-xl-4">
-                                <article class="dashboard-card card border-0 h-100 overflow-hidden position-relative">
-                                    <a href="{{ $productUrl($product) }}">
-                                        @if ($product->cover_image)
-                                            <img class="w-100" style="height: 210px; object-fit: cover;"
-                                                src="{{ $product->cover_image_url }}" alt="{{ $product->title }}">
-                                        @else
-                                            <div class="d-flex align-items-center justify-content-center bg-light text-muted"
-                                                style="height: 210px;">لا توجد صورة</div>
-                                        @endif
-                                    </a>
-
-                                    <div class="card-body p-4 d-flex flex-column">
-                                        <div class="d-flex flex-wrap gap-1 mb-2">
-                                            @foreach ($product->sub_categories->take(2) as $subCategory)
-                                                <span class="badge text-bg-light border text-dark">{{ $subCategory->title }}</span>
-                                            @endforeach
-                                            @if ($product->rating_count > 0)
-                                                <span class="badge text-bg-warning">★ {{ number_format($product->rating_avg, 1) }}</span>
-                                            @endif
-                                        </div>
-                                        <h2 class="h5 fw-bold mb-2">
-                                            <a class="text-dark text-decoration-none stretched-link"
-                                                href="{{ $productUrl($product) }}">{{ $product->title }}</a>
-                                        </h2>
-                                        <p class="text-muted-custom small mb-3">{{ Str::limit($product->description, 80) }}</p>
-
-                                        <div class="d-flex align-items-end justify-content-between gap-2 mt-auto position-relative z-2">
-                                            <div>
-                                                @if ($product->discount_amount > 0)
-                                                    <small class="text-muted-custom text-decoration-line-through d-block">
-                                                        {{ number_format($product->price, 2) }} جنيه
-                                                    </small>
-                                                @endif
-                                                <strong class="text-brand">
-                                                    {{ number_format($product->price_after_discount, 2) }} جنيه
-                                                </strong>
-                                            </div>
-                                            <a class="btn btn-brand" href="{{ $productUrl($product) }}">عرض</a>
-                                        </div>
-                                    </div>
-                                </article>
+                            <div class="col-6 col-md-6 col-xl-4">
+                                <x-storefront.product-card :product="$product" :url="$productUrl($product)" />
                             </div>
                         @endforeach
                     </div>

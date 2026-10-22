@@ -200,9 +200,9 @@
     }
 
     .cart-variant-form.is-dirty {
-      border-color: rgba(91, 76, 240, .45);
+      border-color: rgba(15, 118, 110, .45);
       background: rgba(238, 236, 255, .42);
-      box-shadow: 0 0 0 .2rem rgba(91, 76, 240, .07);
+      box-shadow: 0 0 0 .2rem rgba(15, 118, 110, .07);
     }
 
     .cart-quantity-picker {

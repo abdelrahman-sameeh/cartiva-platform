@@ -16,116 +16,137 @@
 @section('title', $isSellerStore ? 'متجر ' . $storeName . ' | ' . config('app.name') : config('app.name') . ' | كل احتياجاتك في مكان واحد')
 
 @section('content')
-    <div @class(['container pt-2 pb-5', 'seller-store-page' => $isSellerStore])>
-        <div @class([
-            'row align-items-center py-3 py-lg-4',
-            'seller-store-hero p-4 p-lg-5 rounded-5 mb-4' => $isSellerStore,
-        ])>
-            <div class="col-12">
-                <span class="badge rounded-pill bg-primary-subtle text-primary-emphasis px-3 py-2 mb-4">
-                    {{ $isSellerStore ? 'متجر ' . $storeName : 'تسوّق من متاجر مميزة' }}
-                </span>
-                @if ($isSellerStore)
-                    <h1 class="display-3 fw-bold lh-sm mb-4">أهلاً بك في <span class="text-brand">متجر {{ $storeName }}</span></h1>
-                    <p class="lead text-muted-custom mb-4">كل المنتجات والنتائج هنا مقدمة من {{ $storeName }} فقط، لتجربة شراء واضحة داخل متجر واحد.</p>
-                @else
-                    <h1 class="display-3 fw-bold lh-sm mb-4">كل اللي بتدور عليه، <span class="text-brand">في مكان واحد.</span>
-                    </h1>
-                    <p class="lead text-muted-custom mb-4">اكتشف منتجات متنوعة من متاجر موثوقة على
-                        {{ config('app.name') }}، واستمتع بتجربة شراء سهلة من البحث لحد استلام طلبك.</p>
-                @endif
+    <div @class(['home-page', 'seller-store-page' => $isSellerStore])>
+        <section class="container marketplace-hero-wrap">
+            <div @class(['marketplace-hero', 'seller-store-hero' => $isSellerStore])>
+                <div class="marketplace-hero-content">
+                    <span class="eyebrow">
+                        <i class="bi bi-stars" aria-hidden="true"></i>
+                        {{ $isSellerStore ? 'متجر موثوق على ' . config('app.name') : 'Marketplace لكل احتياجاتك' }}
+                    </span>
 
-                <form class="mb-4" method="GET" action="{{ $storeSearchUrl }}" role="search">
-                    <label class="visually-hidden" for="product-search">ابحث عن منتج</label>
-                    <div class="input-group input-group-lg shadow-sm rounded-4 overflow-hidden">
-                        <input class="form-control border-0" id="product-search" name="q" type="search"
-                            placeholder="ابحث عن أي منتج..." maxlength="100">
-                        <button class="btn btn-brand px-4" type="submit"><i class="bi bi-search" aria-hidden="true"></i><span>بحث</span></button>
-                    </div>
+                    @if ($isSellerStore)
+                        <h1>أهلاً بيك في <span>متجر {{ $storeName }}</span></h1>
+                        <p>اكتشف كل منتجات {{ $storeName }}، وقارن بين الاختيارات المتاحة بسهولة قبل ما تقرر.</p>
+                    @else
+                        <h1>كل اللي محتاجه، <span>من متاجر تثق فيها.</span></h1>
+                        <p>دوّر، قارن، واختار المنتج المناسب من بائعين مختلفين في تجربة شراء واحدة بسيطة.</p>
+                    @endif
+
+                    <form class="hero-search" method="GET" action="{{ $storeSearchUrl }}" role="search">
+                        <i class="bi bi-search" aria-hidden="true"></i>
+                        <label class="visually-hidden" for="hero-product-search">ابحث عن منتج</label>
+                        <input id="hero-product-search" name="q" type="search"
+                            placeholder="مثال: موبايل، خلاط، تيشيرت..." maxlength="100">
+                        <button class="btn btn-brand" type="submit">ابحث دلوقتي</button>
+                    </form>
                     @error('q')
                         <div class="text-danger small mt-2">{{ $message }}</div>
                     @enderror
-                </form>
 
-                <div class="d-flex flex-wrap gap-3">
-                    <a class="btn btn-brand px-4" href="{{ $storeSearchUrl }}"><i class="bi bi-bag" aria-hidden="true"></i><span>تسوق الآن</span></a>
-                    <a class="btn btn-outline-primary px-4" href="{{ route('stores.index') }}"><i class="bi bi-shop" aria-hidden="true"></i><span>تصفح المتاجر</span></a>
-                    @auth
-                        <a class="btn btn-outline-dark px-4" href="{{ route('dashboard') }}">الذهاب إلى حسابي</a>
-                    @else
-                        <a class="btn btn-outline-dark px-4" href="{{ route('register') }}">إنشاء حساب</a>
-                    @endauth
+                    <div class="hero-actions">
+                        <a class="btn btn-brand" href="{{ $storeSearchUrl }}">
+                            <i class="bi bi-grid" aria-hidden="true"></i>
+                            تصفح المنتجات
+                        </a>
+                        <a class="btn btn-light" href="{{ route('stores.index') }}">
+                            <i class="bi bi-shop" aria-hidden="true"></i>
+                            {{ $isSellerStore ? 'كل المتاجر' : 'اكتشف المتاجر' }}
+                        </a>
+                    </div>
+
+                    <div class="hero-trust-list" aria-label="مميزات التسوق">
+                        <span><i class="bi bi-shield-check" aria-hidden="true"></i> دفع آمن</span>
+                        <span><i class="bi bi-box-seam" aria-hidden="true"></i> اختيارات متنوعة</span>
+                        <span><i class="bi bi-headset" aria-hidden="true"></i> متابعة واضحة</span>
+                    </div>
+                </div>
+
+                <div class="marketplace-hero-visual" aria-hidden="true">
+                    <div class="hero-orbit hero-orbit-one"></div>
+                    <div class="hero-orbit hero-orbit-two"></div>
+
+                    <div class="hero-visual-card hero-visual-main">
+                        <span class="hero-visual-icon"><i class="bi bi-bag-heart"></i></span>
+                        <small>{{ $isSellerStore ? 'منتجات المتجر' : 'تسوق براحتك' }}</small>
+                        <strong>{{ $products->total() }} منتج متاح</strong>
+                        <div class="hero-visual-progress"><span></span></div>
+                    </div>
+
+                    <div class="hero-floating-card hero-floating-top">
+                        <i class="bi bi-patch-check-fill"></i>
+                        <span>متاجر موثوقة</span>
+                    </div>
+
+                    <div class="hero-floating-card hero-floating-bottom">
+                        <i class="bi bi-lightning-charge-fill"></i>
+                        <span>اختيار أسرع</span>
+                    </div>
                 </div>
             </div>
-        </div>
+        </section>
 
-        <section class="pt-4 pb-5" id="products">
-            <div class="d-flex flex-column flex-md-row align-items-md-end justify-content-between gap-2 mb-4">
+        @unless ($isSellerStore)
+            <section class="container marketplace-benefits" aria-label="ليه تختار Cativa؟">
+                <article>
+                    <span><i class="bi bi-search" aria-hidden="true"></i></span>
+                    <div>
+                        <strong>دوّر بسهولة</strong>
+                        <small>بحث وفلاتر توصلك للمنتج المناسب</small>
+                    </div>
+                </article>
+                <article>
+                    <span><i class="bi bi-layers" aria-hidden="true"></i></span>
+                    <div>
+                        <strong>اختار النسخة الصح</strong>
+                        <small>لون، مقاس أو مساحة حسب نوع المنتج</small>
+                    </div>
+                </article>
+                <article>
+                    <span><i class="bi bi-receipt" aria-hidden="true"></i></span>
+                    <div>
+                        <strong>طلب واحد واضح</strong>
+                        <small>اشتري من أكتر من متجر وتابع طلبك</small>
+                    </div>
+                </article>
+            </section>
+        @endunless
+
+        <section class="container products-section" id="products">
+            <div class="section-heading">
                 <div>
-                    <span class="text-brand fw-semibold">{{ $isSellerStore ? 'أحدث منتجات البائع' : 'أحدث المنتجات' }}</span>
-                    <h2 class="fw-bold mb-1">{{ $isSellerStore ? 'منتجات متجر ' . $storeName : 'اكتشف منتجات المتجر' }}</h2>
-                    <p class="text-muted-custom mb-0">{{ $isSellerStore ? 'كل المعروض هنا تابع لهذا المتجر فقط.' : 'تصفّح أحدث المنتجات المتاحة على ' . config('app.name') . '.' }}</p>
+                    <span class="eyebrow eyebrow-compact">
+                        {{ $isSellerStore ? 'اختيارات من البائع' : 'وصل حديثًا' }}
+                    </span>
+                    <h2>{{ $isSellerStore ? 'منتجات متجر ' . $storeName : 'منتجات تستاهل تكتشفها' }}</h2>
+                    <p>{{ $isSellerStore ? 'كل المنتجات المعروضة هنا من المتجر ده بس.' : 'تصفح أحدث المنتجات المتاحة من متاجر مختلفة.' }}</p>
                 </div>
 
-                <a class="btn btn-outline-primary" href="{{ $storeSearchUrl }}">كل المنتجات والفلاتر</a>
+                <a class="section-link" href="{{ $storeSearchUrl }}">
+                    عرض كل المنتجات
+                    <i class="bi bi-arrow-left" aria-hidden="true"></i>
+                </a>
             </div>
 
             @if ($products->isEmpty())
-                <div class="dashboard-card card border-0">
-                    <div class="card-body text-center p-5">
-                        <div class="fs-1 mb-3">🔍</div>
-                        <h3 class="h4 fw-bold">لا توجد منتجات متاحة بعد</h3>
-                        <p class="text-muted-custom mb-0">ستظهر أحدث المنتجات هنا بمجرد إضافتها.</p>
-                    </div>
+                <div class="empty-state">
+                    <span><i class="bi bi-box-seam" aria-hidden="true"></i></span>
+                    <h3>لسه مفيش منتجات متاحة</h3>
+                    <p>المنتجات الجديدة هتظهر هنا أول ما البائعين يضيفوها.</p>
+                    @unless ($isSellerStore)
+                        <a class="btn btn-brand" href="{{ route('stores.index') }}">تصفح المتاجر</a>
+                    @endunless
                 </div>
             @else
-                <div class="row g-4">
+                <div class="row g-3 g-lg-4">
                     @foreach ($products as $product)
-                        <div class="col-sm-6 col-lg-4 col-xl-3">
-                            <article class="dashboard-card card border-0 h-100 overflow-hidden position-relative">
-                                <a href="{{ $productUrl($product) }}">
-                                    @if ($product->cover_image)
-                                        <img class="w-100" style="height: 210px; object-fit: cover;"
-                                            src="{{ $product->cover_image_url }}" alt="{{ $product->title }}">
-                                    @else
-                                        <div class="d-flex align-items-center justify-content-center bg-light text-muted"
-                                            style="height: 210px;">لا توجد صورة</div>
-                                    @endif
-                                </a>
-
-                                <div class="card-body p-4 d-flex flex-column">
-                                    <div class="mb-2">
-                                        @foreach ($product->sub_categories->take(2) as $subCategory)
-                                            <span class="badge text-bg-light border text-dark mb-1">{{ $subCategory->title }}</span>
-                                        @endforeach
-                                    </div>
-                                    <h3 class="h5 fw-bold mb-2">
-                                        <a class="text-dark text-decoration-none stretched-link"
-                                            href="{{ $productUrl($product) }}">
-                                            {{ $product->title }}
-                                        </a>
-                                    </h3>
-                                    <p class="text-muted-custom small mb-3">{{ Str::limit($product->description, 80) }}</p>
-
-                                    <div class="d-flex align-items-end justify-content-between gap-2 mt-auto position-relative z-2">
-                                        <div>
-                                            @if ($product->discount_amount > 0)
-                                                <small class="text-muted-custom text-decoration-line-through d-block">
-                                                    {{ number_format($product->price, 2) }} جنيه
-                                                </small>
-                                            @endif
-                                            <strong class="text-brand">{{ number_format($product->price_after_discount, 2) }}
-                                                جنيه</strong>
-                                        </div>
-                                        <a class="btn btn-brand" href="{{ $productUrl($product) }}">عرض</a>
-                                    </div>
-                                </div>
-                            </article>
+                        <div class="col-6 col-lg-4 col-xl-3">
+                            <x-storefront.product-card :product="$product" :url="$productUrl($product)" />
                         </div>
                     @endforeach
                 </div>
 
-                <div class="mt-4">
+                <div class="pagination-wrap">
                     {{ $products->fragment('products')->links() }}
                 </div>
             @endif

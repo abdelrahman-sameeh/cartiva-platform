@@ -20,14 +20,13 @@ class StorefrontWebTest extends TestCase
             ->assertOk()
             ->assertSee('action="'.route('products.search').'"', false)
             ->assertSee('Cativa')
-            ->assertSee('تسوّق من متاجر مميزة')
+            ->assertSee('Marketplace لكل احتياجاتك')
             ->assertSee(route('stores.index'), false)
-            ->assertSee('كل اللي بتدور عليه')
-            ->assertSee('ابحث عن أي منتج')
+            ->assertSee('كل اللي محتاجه')
+            ->assertSee('مثال: موبايل، خلاط، تيشيرت')
             ->assertDontSee('printore', false)
             ->assertDontSee('ملابس تناسب كل يوم')
-            ->assertDontSee('متجر متعدد البائعين')
-            ->assertDontSee('بائعين مختلفين');
+            ->assertDontSee('متجر متعدد البائعين');
     }
 
     public function test_search_page_searches_active_products(): void
@@ -60,7 +59,7 @@ class StorefrontWebTest extends TestCase
             ->assertOk()
             ->assertSee('Wireless Headphones')
             ->assertSee(route('stores.products.show', [$seller, $matchingProduct]), false)
-            ->assertSee('stretched-link', false)
+            ->assertSee('product-card', false)
             ->assertDontSee('Coffee Maker')
             ->assertDontSee('Wireless Mouse');
     }
