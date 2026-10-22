@@ -18,7 +18,7 @@
 @section('content')
     <div @class(['home-page', 'seller-store-page' => $isSellerStore])>
         <section class="container marketplace-hero-wrap">
-            <div @class(['marketplace-hero', 'seller-store-hero' => $isSellerStore])>
+            <div @class(['marketplace-hero', 'marketplace-hero-seller' => $isSellerStore])>
                 <div class="marketplace-hero-content">
                     <span class="eyebrow">
                         <i class="bi bi-stars" aria-hidden="true"></i>

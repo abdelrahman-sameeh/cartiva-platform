@@ -230,9 +230,9 @@
     <style>
         .product-options {
             padding: 1rem;
-            border: 1px solid rgba(15, 118, 110, .16);
+            border: 1px solid rgba(37, 99, 235, .16);
             border-radius: 1rem;
-            background: rgba(238, 236, 255, .42);
+            background: var(--brand-soft);
         }
 
         .option-step {
@@ -252,7 +252,7 @@
             font-size: .9rem;
             font-weight: 600;
             border-radius: .8rem;
-            background: #fff;
+            background: var(--surface);
         }
 
         .variant-summary.low-stock {

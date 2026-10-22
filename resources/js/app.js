@@ -1,6 +1,66 @@
 import './bootstrap';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
+const initThemeToggle = () => {
+    const toggle = document.querySelector('[data-theme-toggle]');
+
+    if (!toggle) {
+        return;
+    }
+
+    const icon = toggle.querySelector('[data-theme-icon]');
+    const label = toggle.querySelector('.theme-toggle-label');
+    const themeColor = document.querySelector('meta[name="theme-color"]');
+
+    const applyTheme = theme => {
+        const isDark = theme === 'dark';
+
+        document.documentElement.dataset.theme = theme;
+        document.documentElement.style.colorScheme = theme;
+        toggle.setAttribute('aria-label', isDark ? 'تفعيل الوضع الفاتح' : 'تفعيل الوضع الداكن');
+
+        if (label) {
+            label.textContent = isDark ? 'الوضع الفاتح' : 'الوضع الداكن';
+        }
+
+        if (icon) {
+            icon.className = isDark ? 'bi bi-sun' : 'bi bi-moon-stars';
+            icon.setAttribute('data-theme-icon', '');
+            icon.setAttribute('aria-hidden', 'true');
+        }
+
+        themeColor?.setAttribute('content', isDark ? '#0b1120' : '#2563eb');
+    };
+
+    applyTheme(document.documentElement.dataset.theme || 'light');
+
+    toggle.addEventListener('click', () => {
+        const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+
+        try {
+            localStorage.setItem('cativa-theme', nextTheme);
+        } catch (error) {
+            // The theme still works for the current page when storage is unavailable.
+        }
+
+        applyTheme(nextTheme);
+    });
+
+    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+        try {
+            if (localStorage.getItem('cativa-theme')) {
+                return;
+            }
+        } catch (error) {
+            return;
+        }
+
+        applyTheme(event.matches ? 'dark' : 'light');
+    });
+};
+
+document.addEventListener('DOMContentLoaded', initThemeToggle);
+
 const initProductMasonry = () => {
     const galleries = document.querySelectorAll('.product-gallery');
 

@@ -5,9 +5,20 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="theme-color" content="#0f766e">
+    <meta name="theme-color" content="#2563eb">
     <title>@yield('title', config('app.name'))</title>
 
+    <script>
+        (() => {
+            try {
+                const savedTheme = localStorage.getItem('cativa-theme');
+                const preferredTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+                document.documentElement.dataset.theme = savedTheme || preferredTheme;
+            } catch (error) {
+                document.documentElement.dataset.theme = 'light';
+            }
+        })();
+    </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('styles')
 </head>
@@ -64,6 +75,11 @@
                     </form>
 
                     <div class="navbar-user-actions">
+                        <button class="theme-toggle" type="button" data-theme-toggle aria-label="تفعيل الوضع الداكن"
+                            title="تغيير مظهر الموقع">
+                            <i class="bi bi-moon-stars" data-theme-icon aria-hidden="true"></i>
+                            <span class="theme-toggle-label">الوضع الداكن</span>
+                        </button>
                         @auth
                             @if (auth()->user()->hasRole(\App\Enums\RoleName::USER))
                                 <a @class(['header-action', 'active' => request()->routeIs('orders.*')])

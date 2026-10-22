@@ -193,16 +193,16 @@
 @push('styles')
   <style>
     .cart-variant-form {
-      border: 1px solid #e4e7ec;
+      border: 1px solid var(--border);
       border-radius: 1rem;
-      background: #f9fafb;
+      background: var(--surface-soft);
       transition: border-color .2s ease, background-color .2s ease, box-shadow .2s ease;
     }
 
     .cart-variant-form.is-dirty {
-      border-color: rgba(15, 118, 110, .45);
-      background: rgba(238, 236, 255, .42);
-      box-shadow: 0 0 0 .2rem rgba(15, 118, 110, .07);
+      border-color: rgba(37, 99, 235, .45);
+      background: var(--brand-soft);
+      box-shadow: 0 0 0 .2rem rgba(37, 99, 235, .07);
     }
 
     .cart-quantity-picker {

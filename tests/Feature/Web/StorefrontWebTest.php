@@ -22,6 +22,7 @@ class StorefrontWebTest extends TestCase
             ->assertSee('Cativa')
             ->assertSee('Marketplace لكل احتياجاتك')
             ->assertSee(route('stores.index'), false)
+            ->assertSee('data-theme-toggle', false)
             ->assertSee('كل اللي محتاجه')
             ->assertSee('مثال: موبايل، خلاط، تيشيرت')
             ->assertDontSee('printore', false)
