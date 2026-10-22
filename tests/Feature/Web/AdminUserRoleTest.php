@@ -49,8 +49,8 @@ class AdminUserRoleTest extends TestCase
         $this->actingAs($user)
             ->get(route('dashboard'))
             ->assertOk()
-            ->assertSee('منتجاتي')
-            ->assertSee('إدارة الصلاحيات');
+            ->assertSee(route('seller.products.index'), false)
+            ->assertSee(route('admin.users.roles.index'), false);
     }
 
     public function test_non_admin_cannot_manage_roles(): void

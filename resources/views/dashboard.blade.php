@@ -3,106 +3,194 @@
 @section('title', 'حسابي | ' . config('app.name'))
 
 @section('content')
-    <div class="container py-5">
-        <div class="row justify-content-center">
-            <div class="col-lg-9">
-                <div class="dashboard-card card border-0 overflow-hidden">
-                    <div class="card-body p-4 p-md-5">
-                        <div class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-4">
-                            <div>
-                                <span class="badge rounded-pill bg-success-subtle text-success-emphasis mb-3">تم تسجيل
-                                    الدخول</span>
-                                <h1 class="fw-bold mb-2">أهلاً، {{ $user->first_name }}!</h1>
-                                <p class="text-muted-custom mb-0">دي نقطة البداية لمنطقة حسابك في مشروع الويب.</p>
-                            </div>
-
-                            <div class="brand-mark"
-                                style="width: 5rem; height: 5rem; border-radius: 1.4rem; font-size: 1.7rem;">
-                                {{ mb_strtoupper(mb_substr($user->first_name, 0, 1)) }}
-                            </div>
-                        </div>
-
-                        <hr class="my-5">
-
-                        <div
-                            class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
-                            <div>
-                                <h2 class="h5 fw-bold mb-1">عناوين الشحن</h2>
-                                <p class="text-muted-custom mb-0">أضف عناوينك وحدد العنوان الافتراضي للطلبات.</p>
-                            </div>
-                            <div class="d-flex flex-wrap gap-2">
-                                @if ($user->hasRole(\App\Enums\RoleName::USER))
-                                    <a class="btn btn-brand px-4" href="{{ route('orders.index') }}">طلباتي</a>
-                                @endif
-                                <a class="btn btn-outline-primary px-4" href="{{ route('addresses.index') }}">عناويني</a>
-                            </div>
-                        </div>
-
-                        @if ($user->hasRole(\App\Enums\RoleName::SELLER))
-                            <div
-                                class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
-                                <div>
-                                    <h2 class="h5 fw-bold mb-1">إدارة المنتجات</h2>
-                                    <p class="text-muted-custom mb-0">أضف منتجاتك وتابع المنتجات المنشورة.</p>
-                                </div>
-                                <div class="d-flex flex-wrap gap-2">
-                                    <a class="btn btn-outline-dark px-4" href="{{ route('stores.show', $user) }}"
-                                        target="_blank" rel="noopener">عرض متجري</a>
-                                    <a class="btn btn-outline-primary px-4" href="{{ route('seller.products.index') }}">منتجاتي</a>
-                                    <a class="btn btn-outline-primary px-4"
-                                        href="{{ route('seller.coupons.index') }}">كوبوناتي</a>
-                                    <a class="btn btn-outline-primary px-4"
-                                        href="{{ route('seller.orders.index') }}">طلبات المنتجات</a>
-                                    <a class="btn btn-outline-primary px-4"
-                                        href="{{ route('seller.stripe-connect.show') }}">إعداد استلام الأرباح</a>
-                                </div>
-                            </div>
-                        @endif
-
-                        @if ($user->hasRole(\App\Enums\RoleName::ADMIN))
-                            <div
-                                class="d-flex flex-column flex-md-row align-items-md-center justify-content-between gap-3 mb-4">
-                                <div>
-                                    <h2 class="h5 fw-bold mb-1">إدارة كتالوج المتجر</h2>
-                                    <p class="text-muted-custom mb-0">أنشئ التصنيفات التي سيستخدمها البائعون في منتجاتهم.</p>
-                                </div>
-                                <div class="d-flex flex-wrap gap-2">
-                                    <a class="btn btn-outline-primary px-4" href="{{ route('admin.users.roles.index') }}">
-                                        إدارة الصلاحيات
-                                    </a>
-                                    <a class="btn btn-brand px-4" href="{{ route('admin.categories.index') }}">إدارة
-                                        التصنيفات</a>
-                                </div>
-                            </div>
-                        @endif
-
-                        <div class="row g-3">
-                            <div class="col-md-4">
-                                <div class="rounded-4 bg-light p-3 h-100">
-                                    <small class="text-muted-custom d-block mb-1">الاسم</small>
-                                    <strong>{{ $user->first_name }} {{ $user->last_name }}</strong>
-                                </div>
-                            </div>
-                            <div class="col-md-5">
-                                <div class="rounded-4 bg-light p-3 h-100">
-                                    <small class="text-muted-custom d-block mb-1">البريد الإلكتروني</small>
-                                    <strong>{{ $user->email }}</strong>
-                                </div>
-                            </div>
-                            <div class="col-md-3">
-                                <div class="rounded-4 bg-light p-3 h-100">
-                                    <small class="text-muted-custom d-block mb-2">صلاحيات الحساب</small>
-                                    <div class="d-flex flex-wrap gap-1">
-                                        @foreach ($user->roles as $role)
-                                            <span class="badge text-bg-primary">{{ $role->label }}</span>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+    <div class="container account-dashboard py-4 py-lg-5">
+        <header class="account-header">
+            <div class="account-identity">
+                <span class="account-avatar" aria-hidden="true">
+                    {{ mb_strtoupper(mb_substr($user->first_name, 0, 1)) }}
+                </span>
+                <div>
+                    <span class="account-kicker">لوحة التحكم</span>
+                    <h1>أهلاً، {{ $user->first_name }}</h1>
+                    <p>من هنا تقدر تتابع حسابك وكل الأدوات المتاحة ليك.</p>
                 </div>
             </div>
+
+            <div class="account-role-list" aria-label="صلاحيات الحساب">
+                @foreach ($user->roles as $role)
+                    <span>{{ $role->label }}</span>
+                @endforeach
+            </div>
+        </header>
+
+        <div class="account-layout">
+            <main class="account-main">
+                <section class="account-panel" aria-labelledby="account-tools-title">
+                    <div class="account-panel-heading">
+                        <div>
+                            <span>حسابي</span>
+                            <h2 id="account-tools-title">وصول سريع</h2>
+                        </div>
+                        <p>أهم الحاجات اللي ممكن تحتاجها في حسابك.</p>
+                    </div>
+
+                    <div class="account-action-grid">
+                        @if ($user->hasRole(\App\Enums\RoleName::USER))
+                            <a class="account-action" href="{{ route('orders.index') }}">
+                                <span class="account-action-icon"><i class="bi bi-bag-check" aria-hidden="true"></i></span>
+                                <span class="account-action-copy">
+                                    <strong>طلباتي</strong>
+                                    <small>تابع حالة وتفاصيل طلباتك</small>
+                                </span>
+                                <i class="bi bi-arrow-left account-action-arrow" aria-hidden="true"></i>
+                            </a>
+
+                            <a class="account-action" href="{{ route('cart.index') }}">
+                                <span class="account-action-icon"><i class="bi bi-cart3" aria-hidden="true"></i></span>
+                                <span class="account-action-copy">
+                                    <strong>سلة التسوق</strong>
+                                    <small>راجع المنتجات قبل إتمام الطلب</small>
+                                </span>
+                                <i class="bi bi-arrow-left account-action-arrow" aria-hidden="true"></i>
+                            </a>
+                        @endif
+
+                        <a class="account-action" href="{{ route('addresses.index') }}">
+                            <span class="account-action-icon"><i class="bi bi-geo-alt" aria-hidden="true"></i></span>
+                            <span class="account-action-copy">
+                                <strong>عناويني</strong>
+                                <small>إدارة عناوين الشحن والعنوان الافتراضي</small>
+                            </span>
+                            <i class="bi bi-arrow-left account-action-arrow" aria-hidden="true"></i>
+                        </a>
+                    </div>
+                </section>
+
+                @if ($user->hasRole(\App\Enums\RoleName::SELLER))
+                    <section class="account-panel" aria-labelledby="seller-tools-title">
+                        <div class="account-panel-heading">
+                            <div>
+                                <span>مساحة البائع</span>
+                                <h2 id="seller-tools-title">إدارة متجرك</h2>
+                            </div>
+                            <a class="account-panel-link" href="{{ route('stores.show', $user) }}" target="_blank"
+                                rel="noopener">
+                                عرض المتجر
+                                <i class="bi bi-box-arrow-up-left" aria-hidden="true"></i>
+                            </a>
+                        </div>
+
+                        <div class="account-action-grid">
+                            <a class="account-action" href="{{ route('seller.products.index') }}">
+                                <span class="account-action-icon"><i class="bi bi-box-seam" aria-hidden="true"></i></span>
+                                <span class="account-action-copy">
+                                    <strong>المنتجات</strong>
+                                    <small>أضف المنتجات وعدّل المخزون والاختيارات</small>
+                                </span>
+                                <i class="bi bi-arrow-left account-action-arrow" aria-hidden="true"></i>
+                            </a>
+
+                            <a class="account-action" href="{{ route('seller.orders.index') }}">
+                                <span class="account-action-icon"><i class="bi bi-receipt" aria-hidden="true"></i></span>
+                                <span class="account-action-copy">
+                                    <strong>طلبات المتجر</strong>
+                                    <small>تابع الطلبات وحدّث حالة التجهيز</small>
+                                </span>
+                                <i class="bi bi-arrow-left account-action-arrow" aria-hidden="true"></i>
+                            </a>
+
+                            <a class="account-action" href="{{ route('seller.coupons.index') }}">
+                                <span class="account-action-icon"><i class="bi bi-ticket-perforated" aria-hidden="true"></i></span>
+                                <span class="account-action-copy">
+                                    <strong>الكوبونات</strong>
+                                    <small>أنشئ عروض خاصة بمنتجات متجرك</small>
+                                </span>
+                                <i class="bi bi-arrow-left account-action-arrow" aria-hidden="true"></i>
+                            </a>
+
+                            <a class="account-action" href="{{ route('seller.stripe-connect.show') }}">
+                                <span class="account-action-icon"><i class="bi bi-wallet2" aria-hidden="true"></i></span>
+                                <span class="account-action-copy">
+                                    <strong>إعداد استلام الأرباح</strong>
+                                    <small>راجع حالة حساب Stripe والمتطلبات</small>
+                                </span>
+                                <i class="bi bi-arrow-left account-action-arrow" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                    </section>
+                @endif
+
+                @if ($user->hasRole(\App\Enums\RoleName::ADMIN))
+                    <section class="account-panel" aria-labelledby="admin-tools-title">
+                        <div class="account-panel-heading">
+                            <div>
+                                <span>الإدارة</span>
+                                <h2 id="admin-tools-title">أدوات المنصة</h2>
+                            </div>
+                            <p>إدارة البيانات الأساسية وصلاحيات المستخدمين.</p>
+                        </div>
+
+                        <div class="account-action-grid">
+                            <a class="account-action" href="{{ route('admin.categories.index') }}">
+                                <span class="account-action-icon"><i class="bi bi-grid" aria-hidden="true"></i></span>
+                                <span class="account-action-copy">
+                                    <strong>التصنيفات</strong>
+                                    <small>إدارة التصنيفات الرئيسية والفرعية</small>
+                                </span>
+                                <i class="bi bi-arrow-left account-action-arrow" aria-hidden="true"></i>
+                            </a>
+
+                            <a class="account-action" href="{{ route('admin.users.roles.index') }}">
+                                <span class="account-action-icon"><i class="bi bi-shield-check" aria-hidden="true"></i></span>
+                                <span class="account-action-copy">
+                                    <strong>الصلاحيات</strong>
+                                    <small>راجع أدوار المستخدمين وحدّثها</small>
+                                </span>
+                                <i class="bi bi-arrow-left account-action-arrow" aria-hidden="true"></i>
+                            </a>
+                        </div>
+                    </section>
+                @endif
+            </main>
+
+            <aside class="account-sidebar">
+                <section class="account-profile-card" aria-labelledby="profile-title">
+                    <div class="account-profile-heading">
+                        <span><i class="bi bi-person" aria-hidden="true"></i></span>
+                        <div>
+                            <small>بيانات الحساب</small>
+                            <h2 id="profile-title">الملف الشخصي</h2>
+                        </div>
+                    </div>
+
+                    <dl class="account-details">
+                        <div>
+                            <dt>الاسم</dt>
+                            <dd>{{ $user->first_name }} {{ $user->last_name }}</dd>
+                        </div>
+                        <div>
+                            <dt>البريد الإلكتروني</dt>
+                            <dd dir="ltr">{{ $user->email }}</dd>
+                        </div>
+                        @if ($user->phone)
+                            <div>
+                                <dt>رقم الهاتف</dt>
+                                <dd dir="ltr">{{ $user->phone }}</dd>
+                            </div>
+                        @endif
+                    </dl>
+
+                    <a class="btn btn-light w-100" href="{{ route('addresses.index') }}">
+                        <i class="bi bi-geo-alt" aria-hidden="true"></i>
+                        إدارة بيانات الشحن
+                    </a>
+                </section>
+
+                <div class="account-help-note">
+                    <i class="bi bi-shield-check" aria-hidden="true"></i>
+                    <p><strong>حسابك محمي</strong><span>متشاركش بيانات الدخول أو معلومات الدفع مع أي حد.</span></p>
+                </div>
+            </aside>
         </div>
     </div>
 @endsection
