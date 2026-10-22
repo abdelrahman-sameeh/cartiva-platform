@@ -31,19 +31,26 @@ class ProductFilter
             return;
         }
 
-        $like = "%{$search}%";
-        $query->where(function (Builder $query) use ($like) {
-            $query->where('products.title', 'like', $like)
-                ->orWhere('products.description', 'like', $like)
-                ->orWhere('products.slug', 'like', $like)
-                ->orWhereHas('attributes', function (Builder $query) use ($like) {
-                    $query->where('key', 'like', $like)->orWhere('value', 'like', $like);
-                })
-                ->orWhereHas('sub_categories', function (Builder $query) use ($like) {
-                    $query->where('title', 'like', $like)
-                        ->orWhereHas('category', fn (Builder $query) => $query->where('title', 'like', $like));
-                });
-        });
+        $terms = preg_split('/\s+/u', $search, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+
+        foreach ($terms as $term) {
+            $like = "%{$term}%";
+            $query->where(function (Builder $query) use ($like) {
+                $query->where('products.title', 'like', $like)
+                    ->orWhere('products.description', 'like', $like)
+                    ->orWhere('products.slug', 'like', $like)
+                    ->orWhereHas('attributes', function (Builder $query) use ($like) {
+                        $query->where('key', 'like', $like)->orWhere('value', 'like', $like);
+                    })
+                    ->orWhereHas('variants.options', function (Builder $query) use ($like) {
+                        $query->where('key', 'like', $like)->orWhere('value', 'like', $like);
+                    })
+                    ->orWhereHas('sub_categories', function (Builder $query) use ($like) {
+                        $query->where('title', 'like', $like)
+                            ->orWhereHas('category', fn (Builder $query) => $query->where('title', 'like', $like));
+                    });
+            });
+        }
     }
 
     /** @param array<string, mixed> $filters */

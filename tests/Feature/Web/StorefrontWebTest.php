@@ -81,13 +81,28 @@ class StorefrontWebTest extends TestCase
             'discount_amount' => 0,
         ]);
         $product->attributes()->create(['key' => 'color', 'value' => 'Midnight Black']);
+        $product->attributes()->create(['key' => 'ram', 'value' => '16 GB']);
         $product->sub_categories()->attach($subCategory);
+        $variantOptions = ['storage' => '256 GB'];
+        $variant = $product->variants()->create([
+            'stock' => 2,
+            'option_signature' => ProductVariantOptions::signature($variantOptions),
+        ]);
+        $variant->options()->create(['key' => 'storage', 'value' => '256 GB']);
 
         $this->get(route('products.search', ['q' => 'Midnight']))
             ->assertOk()
             ->assertSee('Creator Device');
 
         $this->get(route('products.search', ['q' => 'Phones']))
+            ->assertOk()
+            ->assertSee('Creator Device');
+
+        $this->get(route('products.search', ['q' => 'ram 16 GB']))
+            ->assertOk()
+            ->assertSee('Creator Device');
+
+        $this->get(route('products.search', ['q' => 'storage 256 GB']))
             ->assertOk()
             ->assertSee('Creator Device');
     }
