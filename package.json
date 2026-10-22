@@ -1,4 +1,5 @@
 {
+    "name": "cartiva",
     "private": true,
     "type": "module",
     "scripts": {

@@ -38,7 +38,7 @@ const initThemeToggle = () => {
         const nextTheme = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
 
         try {
-            localStorage.setItem('cativa-theme', nextTheme);
+            localStorage.setItem('cartiva-theme', nextTheme);
         } catch (error) {
             // The theme still works for the current page when storage is unavailable.
         }
@@ -48,7 +48,7 @@ const initThemeToggle = () => {
 
     window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
         try {
-            if (localStorage.getItem('cativa-theme')) {
+            if (localStorage.getItem('cartiva-theme')) {
                 return;
             }
         } catch (error) {

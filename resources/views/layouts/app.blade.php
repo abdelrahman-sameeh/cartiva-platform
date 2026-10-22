@@ -11,8 +11,16 @@
     <script>
         (() => {
             try {
-                const savedTheme = localStorage.getItem('cativa-theme');
+                const themeKey = 'cartiva-theme';
+                const legacyThemeKey = 'cativa-theme';
+                const savedTheme = localStorage.getItem(themeKey) || localStorage.getItem(legacyThemeKey);
                 const preferredTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+
+                if (!localStorage.getItem(themeKey) && savedTheme) {
+                    localStorage.setItem(themeKey, savedTheme);
+                    localStorage.removeItem(legacyThemeKey);
+                }
+
                 document.documentElement.dataset.theme = savedTheme || preferredTheme;
             } catch (error) {
                 document.documentElement.dataset.theme = 'light';

@@ -92,7 +92,7 @@ stripe_secret="$(
     '
 )"
 
-runtime_dir="$(mktemp -d "${TMPDIR:-/tmp}/cativa-dev.XXXXXX")"
+runtime_dir="$(mktemp -d "${TMPDIR:-/tmp}/cartiva-dev.XXXXXX")"
 chmod 700 "$runtime_dir"
 connect_log="${runtime_dir}/stripe-connect.log"
 checkout_log="${runtime_dir}/stripe-checkout.log"
@@ -176,7 +176,7 @@ start_logged_process \
     npm run dev
 
 echo
-echo "Cativa is running at ${base_url}"
+echo "Cartiva is running at ${base_url}"
 echo 'Stripe Connect and Checkout webhooks are forwarding locally.'
 echo 'Press Ctrl+C to stop all processes.'
 echo

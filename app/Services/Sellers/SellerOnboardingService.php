@@ -22,7 +22,7 @@ class SellerOnboardingService
 
         $stripeAccount = $this->stripe->createConnectedAccount(
             $seller,
-            "printore:seller-connect-account:express-recipient-v1:{$seller->getKey()}"
+            "cartiva:seller-connect-account:express-recipient-v1:{$seller->getKey()}"
         );
 
         return SellerStripeAccount::query()->firstOrCreate(

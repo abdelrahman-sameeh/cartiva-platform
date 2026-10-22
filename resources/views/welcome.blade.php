@@ -62,7 +62,7 @@
         </section>
 
         @unless ($isSellerStore)
-            <section class="container marketplace-benefits" aria-label="ليه تختار Cativa؟">
+            <section class="container marketplace-benefits" aria-label="ليه تختار Cartiva؟">
                 <article>
                     <span><i class="bi bi-search" aria-hidden="true"></i></span>
                     <div>

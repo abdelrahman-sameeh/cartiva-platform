@@ -1,6 +1,6 @@
-# Cativa — Project & Interview Guide
+# Cartiva — Project & Interview Guide
 
-الملف ده مذكرة بالمصري تساعدك تفهم مشروع **Cativa** وتعرف تعرضه في الـinterview. متحفظش أسماء الـtables وخلاص؛ افهم الداتا بتمشي إزاي، وليه كل قرار اتاخد، وإيه الـtrade-offs بتاعته.
+الملف ده مذكرة بالمصري تساعدك تفهم مشروع **Cartiva** وتعرف تعرضه في الـinterview. متحفظش أسماء الـtables وخلاص؛ افهم الداتا بتمشي إزاي، وليه كل قرار اتاخد، وإيه الـtrade-offs بتاعته.
 
 ## خطة المذاكرة بالـPhases
 
@@ -25,11 +25,11 @@
 
 تقدر تقدم المشروع بالإنجليزي كده:
 
-> Cativa is a multi-vendor e-commerce platform built with Laravel. It supports multiple roles such as customers, sellers, admins, and delivery users. Sellers can create generic products with flexible attributes and variants, so the catalog is not limited to clothing. Customers can search, filter, add exact variants to their carts, apply seller-specific coupons, and place orders containing products from multiple sellers. Each order is split into sub-orders per seller. The project also integrates Stripe Checkout for payments and Stripe Connect for seller onboarding, with secure webhook processing, idempotency, database transactions, and concurrency protection.
+> Cartiva is a multi-vendor e-commerce platform built with Laravel. It supports multiple roles such as customers, sellers, admins, and delivery users. Sellers can create generic products with flexible attributes and variants, so the catalog is not limited to clothing. Customers can search, filter, add exact variants to their carts, apply seller-specific coupons, and place orders containing products from multiple sellers. Each order is split into sub-orders per seller. The project also integrates Stripe Checkout for payments and Stripe Connect for seller onboarding, with secure webhook processing, idempotency, database transactions, and concurrency protection.
 
 وبالمصري:
 
-> Cativa هو Marketplace متعدد البائعين. يستطيع كل بائع إضافة منتجات عامة بخصائص ونسخ مختلفة، ويستطيع العميل الشراء من أكثر من بائع داخل طلب واحد. يقوم النظام بتقسيم الطلب داخليًا حسب البائع، ويحمي المخزون والدفع باستخدام database transactions وrow locking وStripe webhooks موثقة.
+> Cartiva هو Marketplace متعدد البائعين. يستطيع كل بائع إضافة منتجات عامة بخصائص ونسخ مختلفة، ويستطيع العميل الشراء من أكثر من بائع داخل طلب واحد. يقوم النظام بتقسيم الطلب داخليًا حسب البائع، ويحمي المخزون والدفع باستخدام database transactions وrow locking وStripe webhooks موثقة.
 
 ## 2. معمارية المشروع
 

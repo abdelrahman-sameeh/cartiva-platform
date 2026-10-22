@@ -1,4 +1,4 @@
-# Cativa — مراجعة سريعة قبل الـInterview
+# Cartiva — مراجعة سريعة قبل الـInterview
 
 الملف ده النسخة المختصرة من [دليل المشروع الكامل](./interview-guide.md). استخدمه بعد ما تفهم الـPhases من الملف الكبير، مش بدلها.
 
@@ -6,11 +6,11 @@
 
 ### تقديم في 30 ثانية
 
-> Cativa is a multi-vendor e-commerce platform built with Laravel. It has a flexible product catalog, multi-seller orders, stock protection, Stripe Checkout for customer payments, and Stripe Connect for seller onboarding. I focused on data integrity, secure webhooks, idempotency, and keeping the code organized using Form Requests, Services, and Gateways.
+> Cartiva is a multi-vendor e-commerce platform built with Laravel. It has a flexible product catalog, multi-seller orders, stock protection, Stripe Checkout for customer payments, and Stripe Connect for seller onboarding. I focused on data integrity, secure webhooks, idempotency, and keeping the code organized using Form Requests, Services, and Gateways.
 
 بالمصري:
 
-> Cativa عبارة عن Marketplace متعدد البائعين. البائع يقدر يضيف أي نوع منتج بخصائص وVariants مرنة، والعميل يقدر يشتري من أكتر من بائع في Order واحدة. النظام بيقسمها لـSub-orders، وبيحمي المخزون والدفع باستخدام transactions وlocking وStripe webhooks.
+> Cartiva عبارة عن Marketplace متعدد البائعين. البائع يقدر يضيف أي نوع منتج بخصائص وVariants مرنة، والعميل يقدر يشتري من أكتر من بائع في Order واحدة. النظام بيقسمها لـSub-orders، وبيحمي المخزون والدفع باستخدام transactions وlocking وStripe webhooks.
 
 ### تقسيم الكود
 
@@ -313,7 +313,7 @@ Authentication يعني مين المستخدم، وAuthorization يعني مس�
 
 ## آخر 8 جمل تراجعهم
 
-1. Cativa Multi-vendor Marketplace مش متجر Seller واحد.
+1. Cartiva Multi-vendor Marketplace مش متجر Seller واحد.
 2. Product Attribute بتوصف المنتج، وVariant Option بتحدد النسخة اللي هتتباع.
 3. الـvariant هي اللي عندها stock وSKU وسعر اختياري.
 4. Order واحدة بتتقسم Sub-order لكل Seller.

@@ -50,7 +50,7 @@ class ProductFilterApiTest extends TestCase
         $matching = $this->product($seller, 'Creator Laptop', 2000);
         $this->variant($matching, [], 2);
         $matching->attributes()->createMany([
-            ['key' => 'brand', 'value' => 'Cativa'],
+            ['key' => 'brand', 'value' => 'Cartiva'],
             ['key' => 'ram', 'value' => '16 GB', 'numeric_value' => 16, 'unit' => 'GB'],
         ]);
 
@@ -62,7 +62,7 @@ class ProductFilterApiTest extends TestCase
         ]);
 
         $this->getJson('/api/products?'.http_build_query([
-            'attributes' => ['brand' => ['Cativa', 'Alternative']],
+            'attributes' => ['brand' => ['Cartiva', 'Alternative']],
             'attribute_ranges' => ['ram' => ['min' => 12, 'max' => 32, 'unit' => 'GB']],
         ]))->assertOk()
             ->assertJsonCount(1, 'data')
