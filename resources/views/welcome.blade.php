@@ -44,43 +44,18 @@
                         <div class="text-danger small mt-2">{{ $message }}</div>
                     @enderror
 
-                    <div class="hero-actions">
-                        <a class="btn btn-brand" href="{{ $storeSearchUrl }}">
-                            <i class="bi bi-grid" aria-hidden="true"></i>
-                            تصفح المنتجات
-                        </a>
-                        <a class="btn btn-light" href="{{ route('stores.index') }}">
-                            <i class="bi bi-shop" aria-hidden="true"></i>
-                            {{ $isSellerStore ? 'كل المتاجر' : 'اكتشف المتاجر' }}
-                        </a>
-                    </div>
-
                     <div class="hero-trust-list" aria-label="مميزات التسوق">
                         <span><i class="bi bi-shield-check" aria-hidden="true"></i> دفع آمن</span>
                         <span><i class="bi bi-box-seam" aria-hidden="true"></i> اختيارات متنوعة</span>
                         <span><i class="bi bi-headset" aria-hidden="true"></i> متابعة واضحة</span>
                     </div>
-                </div>
 
-                <div class="marketplace-hero-visual" aria-hidden="true">
-                    <div class="hero-orbit hero-orbit-one"></div>
-                    <div class="hero-orbit hero-orbit-two"></div>
-
-                    <div class="hero-visual-card hero-visual-main">
-                        <span class="hero-visual-icon"><i class="bi bi-bag-heart"></i></span>
-                        <small>{{ $isSellerStore ? 'منتجات المتجر' : 'تسوق براحتك' }}</small>
-                        <strong>{{ $products->total() }} منتج متاح</strong>
-                        <div class="hero-visual-progress"><span></span></div>
-                    </div>
-
-                    <div class="hero-floating-card hero-floating-top">
-                        <i class="bi bi-patch-check-fill"></i>
-                        <span>متاجر موثوقة</span>
-                    </div>
-
-                    <div class="hero-floating-card hero-floating-bottom">
-                        <i class="bi bi-lightning-charge-fill"></i>
-                        <span>اختيار أسرع</span>
+                    <div class="hero-actions">
+                        <a class="hero-secondary-link" href="{{ route('stores.index') }}">
+                            <i class="bi bi-shop" aria-hidden="true"></i>
+                            {{ $isSellerStore ? 'الرجوع لكل المتاجر' : 'أو تصفح المتاجر' }}
+                            <i class="bi bi-arrow-left" aria-hidden="true"></i>
+                        </a>
                     </div>
                 </div>
             </div>

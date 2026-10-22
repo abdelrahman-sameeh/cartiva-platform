@@ -196,13 +196,13 @@
       border: 1px solid var(--border);
       border-radius: 1rem;
       background: var(--surface-soft);
-      transition: border-color .2s ease, background-color .2s ease, box-shadow .2s ease;
+      transition: border-color .2s ease, background-color .2s ease;
     }
 
     .cart-variant-form.is-dirty {
-      border-color: rgba(217, 119, 6, .45);
+      border-color: rgba(49, 93, 125, .45);
       background: var(--brand-soft);
-      box-shadow: 0 0 0 .2rem rgba(217, 119, 6, .07);
+      box-shadow: none;
     }
 
     .cart-quantity-picker {

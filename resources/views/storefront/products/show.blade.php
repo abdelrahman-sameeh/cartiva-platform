@@ -230,7 +230,7 @@
     <style>
         .product-options {
             padding: 1rem;
-            border: 1px solid rgba(217, 119, 6, .16);
+            border: 1px solid rgba(49, 93, 125, .16);
             border-radius: 1rem;
             background: var(--brand-soft);
         }
