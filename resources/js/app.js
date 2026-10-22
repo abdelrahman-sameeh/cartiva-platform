@@ -29,7 +29,7 @@ const initThemeToggle = () => {
             icon.setAttribute('aria-hidden', 'true');
         }
 
-        themeColor?.setAttribute('content', isDark ? '#0b1120' : '#2563eb');
+        themeColor?.setAttribute('content', isDark ? '#121110' : '#292524');
     };
 
     applyTheme(document.documentElement.dataset.theme || 'light');
