@@ -27,18 +27,32 @@ return new class extends Migration
             $table->timestamps();
 
             $table->unique(['seller_id', 'slug']);
+            $table->index(['is_active', 'created_at'], 'products_active_created_index');
+            $table->index(
+                ['seller_id', 'is_active', 'created_at'],
+                'products_seller_active_created_index'
+            );
         });
 
         Schema::create('product_variants', function (Blueprint $table) {
             $table->id();
             $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
-            $table->string('size', 30);
-            $table->string('color', 50);
+            $table->string('sku', 100)->nullable()->index();
+            $table->string('size', 30)->nullable();
+            $table->string('color', 50)->nullable();
+            $table->decimal('price', 10, 2)->nullable();
             $table->unsignedInteger('stock')->default(0);
+            $table->char('option_signature', 64)->nullable();
             $table->timestamps();
 
-            $table->unique(['product_id', 'size', 'color']);
-            $table->index(['product_id', 'stock']);
+            $table->unique(
+                ['product_id', 'option_signature'],
+                'product_variants_product_signature_unique'
+            );
+            $table->index(
+                ['product_id', 'stock', 'price'],
+                'product_variants_stock_price_index'
+            );
         });
     }
 

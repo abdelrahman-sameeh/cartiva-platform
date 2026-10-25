@@ -9,12 +9,6 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('product_variants', function (Blueprint $table) {
-            $table->string('sku', 100)->nullable()->after('product_id')->index();
-            $table->decimal('price', 10, 2)->nullable()->after('color');
-            $table->char('option_signature', 64)->nullable()->after('stock');
-        });
-
         Schema::table('product_attributes', function (Blueprint $table) {
             $table->decimal('numeric_value', 15, 4)->nullable()->after('value');
             $table->string('unit', 30)->nullable()->after('numeric_value');
@@ -52,38 +46,12 @@ return new class extends Migration
             );
         });
 
-        Schema::table('products', function (Blueprint $table) {
-            $table->index(['is_active', 'created_at'], 'products_active_created_index');
-            $table->index(
-                ['seller_id', 'is_active', 'created_at'],
-                'products_seller_active_created_index'
-            );
-        });
-
         $this->backfillVariantOptions();
         $this->backfillOrderItemOptions();
-
-        Schema::table('product_variants', function (Blueprint $table) {
-            $table->unique(
-                ['product_id', 'option_signature'],
-                'product_variants_product_signature_unique'
-            );
-            $table->index(
-                ['product_id', 'stock', 'price'],
-                'product_variants_stock_price_index'
-            );
-        });
     }
 
     public function down(): void
     {
-        Schema::table('product_variants', function (Blueprint $table) {
-            $table->dropUnique('product_variants_product_signature_unique');
-            $table->dropIndex('product_variants_stock_price_index');
-            $table->dropIndex(['sku']);
-            $table->dropColumn(['sku', 'price', 'option_signature']);
-        });
-
         Schema::table('product_attributes', function (Blueprint $table) {
             $table->dropUnique('product_attributes_product_key_value_unique');
             $table->dropIndex('product_attributes_key_value_product_index');
@@ -103,11 +71,6 @@ return new class extends Migration
 
         Schema::table('product_sub_category', function (Blueprint $table) {
             $table->dropUnique('product_sub_category_product_sub_unique');
-        });
-
-        Schema::table('products', function (Blueprint $table) {
-            $table->dropIndex('products_active_created_index');
-            $table->dropIndex('products_seller_active_created_index');
         });
     }
 
