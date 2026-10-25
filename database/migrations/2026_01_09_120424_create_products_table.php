@@ -54,6 +54,16 @@ return new class extends Migration
                 'product_variants_stock_price_index'
             );
         });
+
+        Schema::create('product_variant_options', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('product_variant_id')->constrained('product_variants')->cascadeOnDelete();
+            $table->string('key', 50);
+            $table->string('value', 100);
+
+            $table->unique(['product_variant_id', 'key'], 'variant_options_variant_key_unique');
+            $table->index(['key', 'value', 'product_variant_id'], 'variant_options_filter_index');
+        });
     }
 
     /**
@@ -61,6 +71,7 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::dropIfExists('product_variant_options');
         Schema::dropIfExists('product_variants');
         Schema::dropIfExists('products');
     }
