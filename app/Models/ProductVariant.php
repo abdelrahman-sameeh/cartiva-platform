@@ -12,8 +12,6 @@ class ProductVariant extends Model
     protected $fillable = [
         'product_id',
         'sku',
-        'size',
-        'color',
         'price',
         'stock',
         'option_signature',
@@ -37,16 +35,7 @@ class ProductVariant extends Model
     /** @return array<string, string> */
     public function getOptionValuesAttribute(): array
     {
-        $options = $this->options->pluck('value', 'key')->all();
-
-        if ($options !== []) {
-            return $options;
-        }
-
-        return array_filter([
-            'size' => $this->size,
-            'color' => $this->color,
-        ], fn ($value): bool => $value !== null && $value !== '');
+        return $this->options->pluck('value', 'key')->all();
     }
 
     public function getOptionLabelAttribute(): string

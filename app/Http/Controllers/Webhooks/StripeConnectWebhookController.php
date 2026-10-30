@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Webhooks;
 use App\Http\Controllers\Controller;
 use App\Models\SellerStripeAccount;
 use App\Models\StripeWebhookEvent;
+use App\Services\Payments\SellerTransferService;
 use App\Services\Sellers\SellerOnboardingService;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -26,7 +27,8 @@ class StripeConnectWebhookController extends Controller
 
     public function __construct(
         private readonly StripeClient $stripe,
-        private readonly SellerOnboardingService $onboardingService
+        private readonly SellerOnboardingService $onboardingService,
+        private readonly SellerTransferService $sellerTransfers
     ) {}
 
     public function __invoke(Request $request): Response
@@ -62,7 +64,11 @@ class StripeConnectWebhookController extends Controller
             ->first();
 
         if ($localAccount) {
-            $this->onboardingService->sync($localAccount);
+            $syncedAccount = $this->onboardingService->sync($localAccount);
+
+            if ($syncedAccount->isReady()) {
+                $this->sellerTransfers->retryOutstanding(sellerId: $syncedAccount->seller_id);
+            }
         }
 
         $event->markProcessed();

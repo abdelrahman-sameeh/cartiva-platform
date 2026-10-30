@@ -4,6 +4,7 @@ namespace App\Http\Requests\Product;
 
 use App\Support\ProductVariantOptions;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Validator;
 
 class UpdateProductRequest extends FormRequest
@@ -18,7 +19,7 @@ class UpdateProductRequest extends FormRequest
         return [
             'title' => 'sometimes|string|min:3|max:50',
             'description' => 'sometimes|string|min:10|max:1000',
-            'cover_image' => 'sometimes|nullable|image|mimes:jpg,jpeg,png,webp|max:2048',
+            'cover_image' => 'sometimes|nullable|image|mimes:jpg,jpeg,png,webp|max:5000',
             'price' => 'sometimes|numeric|min:0',
             'discount_amount' => 'sometimes|nullable|numeric|min:0|lte:price',
             'variants' => ['sometimes', 'required', 'array', 'min:1'],
@@ -30,7 +31,15 @@ class UpdateProductRequest extends FormRequest
             'variants.*.options.*.key' => ['required', 'string', 'max:50'],
             'variants.*.options.*.value' => ['required', 'string', 'max:100'],
             'product_pictures' => 'sometimes|nullable|array',
-            'product_pictures.*' => 'image|mimes:jpg,jpeg,png,webp|max:2048',
+            'product_pictures.*' => 'image|mimes:jpg,jpeg,png,webp|max:5000',
+            'deleted_picture_ids' => ['sometimes', 'array'],
+            'deleted_picture_ids.*' => [
+                'integer',
+                'distinct',
+                Rule::exists('product_pictures', 'id')->where(
+                    fn ($query) => $query->where('product_id', $this->route('product')->id)
+                ),
+            ],
             'sub_categories' => 'sometimes|array|min:1',
             'sub_categories.*' => 'exists:sub_category,id',
             'attributes' => 'sometimes|array|nullable',

@@ -128,7 +128,7 @@ class StorefrontWebTest extends TestCase
             'price' => 500,
             'discount_amount' => 200,
         ]);
-        $matchingProduct->variants()->create(['size' => 'M', 'color' => 'أسود', 'stock' => 4]);
+        $matchingProduct->variants()->create(['stock' => 4]);
         $matchingProduct->sub_categories()->attach($subCategory);
 
         $cheapProduct = $seller->products()->create([
@@ -138,7 +138,7 @@ class StorefrontWebTest extends TestCase
             'price' => 150,
             'discount_amount' => 20,
         ]);
-        $cheapProduct->variants()->create(['size' => 'M', 'color' => 'أسود', 'stock' => 5]);
+        $cheapProduct->variants()->create(['stock' => 5]);
         $cheapProduct->sub_categories()->attach($subCategory);
 
         $outOfStockProduct = $seller->products()->create([
@@ -148,7 +148,7 @@ class StorefrontWebTest extends TestCase
             'price' => 320,
             'discount_amount' => 20,
         ]);
-        $outOfStockProduct->variants()->create(['size' => 'M', 'color' => 'أسود', 'stock' => 0]);
+        $outOfStockProduct->variants()->create(['stock' => 0]);
         $outOfStockProduct->sub_categories()->attach($subCategory);
 
         $otherProduct = $seller->products()->create([
@@ -158,7 +158,7 @@ class StorefrontWebTest extends TestCase
             'price' => 300,
             'discount_amount' => 50,
         ]);
-        $otherProduct->variants()->create(['size' => 'M', 'color' => 'أسود', 'stock' => 2]);
+        $otherProduct->variants()->create(['stock' => 2]);
         $otherProduct->sub_categories()->attach($otherSubCategory);
 
         $this->get(route('products.search', ['category_id' => $category->id]))
@@ -211,10 +211,14 @@ class StorefrontWebTest extends TestCase
             'discount_amount' => 25,
         ]);
         $activeProduct->attributes()->create(['key' => 'size', 'value' => 'Medium']);
-        $activeProduct->variants()->create([
-            'size' => 'M',
-            'color' => 'أسود',
+        $options = ['size' => 'M', 'color' => 'أسود'];
+        $variant = $activeProduct->variants()->create([
             'stock' => 7,
+            'option_signature' => ProductVariantOptions::signature($options),
+        ]);
+        $variant->options()->createMany([
+            ['key' => 'size', 'value' => 'M'],
+            ['key' => 'color', 'value' => 'أسود'],
         ]);
         $inactiveProduct = $seller->products()->create([
             'title' => 'Hidden Product',

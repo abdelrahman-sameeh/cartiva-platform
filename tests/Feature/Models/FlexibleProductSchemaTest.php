@@ -32,6 +32,10 @@ class FlexibleProductSchemaTest extends TestCase
             'variant_options',
         ]));
         $this->assertTrue(Schema::hasTable('product_variant_options'));
+        $this->assertFalse(Schema::hasColumn('product_variants', 'size'));
+        $this->assertFalse(Schema::hasColumn('product_variants', 'color'));
+        $this->assertFalse(Schema::hasColumn('order_items', 'size'));
+        $this->assertFalse(Schema::hasColumn('order_items', 'color'));
 
         $seller = User::create([
             'first_name' => 'Flexible',
@@ -52,8 +56,6 @@ class FlexibleProductSchemaTest extends TestCase
         ], JSON_THROW_ON_ERROR));
         $variant = $product->variants()->create([
             'sku' => 'PHONE-256-BLK',
-            'size' => 'legacy',
-            'color' => 'legacy',
             'price' => 16000,
             'stock' => 7,
             'option_signature' => $signature,
@@ -75,8 +77,6 @@ class FlexibleProductSchemaTest extends TestCase
         $this->expectException(QueryException::class);
 
         $product->variants()->create([
-            'size' => 'another legacy value',
-            'color' => 'another legacy value',
             'stock' => 1,
             'option_signature' => $signature,
         ]);

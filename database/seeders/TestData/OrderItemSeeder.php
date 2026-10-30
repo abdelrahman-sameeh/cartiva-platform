@@ -37,8 +37,6 @@ class OrderItemSeeder extends Seeder
                     'price_at_purchase' => $variant->priceAfterDiscount(),
                     'variant_sku' => $variant->sku,
                     'variant_options' => $variant->option_values,
-                    'size' => null,
-                    'color' => null,
                     'quantity' => 1,
                     'created_at_snapshot' => $product->created_at,
                 ]);

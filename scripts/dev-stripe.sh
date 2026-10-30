@@ -96,6 +96,7 @@ runtime_dir="$(mktemp -d "${TMPDIR:-/tmp}/cartiva-dev.XXXXXX")"
 chmod 700 "$runtime_dir"
 connect_log="${runtime_dir}/stripe-connect.log"
 checkout_log="${runtime_dir}/stripe-checkout.log"
+scheduler_log="${runtime_dir}/scheduler.log"
 
 start_logged_process() {
     local label="$1"
@@ -175,9 +176,14 @@ start_logged_process \
     "${runtime_dir}/vite.log" \
     npm run dev
 
+start_logged_process \
+    'scheduler' \
+    "$scheduler_log" \
+    php artisan schedule:work
+
 echo
 echo "Cartiva is running at ${base_url}"
-echo 'Stripe Connect and Checkout webhooks are forwarding locally.'
+echo 'Stripe webhooks are forwarding locally and pending transfers retry every minute.'
 echo 'Press Ctrl+C to stop all processes.'
 echo
 

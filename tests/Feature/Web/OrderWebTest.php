@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Models\User;
 use App\Services\OrderService;
 use App\Services\Payments\Gateways\StripeCheckoutGateway;
+use App\Support\ProductVariantOptions;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Mockery;
 use Stripe\Checkout\Session;
@@ -198,10 +199,14 @@ class OrderWebTest extends TestCase
             'seller_id' => $seller->id,
             'is_active' => true,
         ]);
+        $options = ['size' => 'XL', 'color' => 'كحلي'];
         $variant = $product->variants()->create([
-            'size' => 'XL',
-            'color' => 'كحلي',
             'stock' => 10,
+            'option_signature' => ProductVariantOptions::signature($options),
+        ]);
+        $variant->options()->createMany([
+            ['key' => 'size', 'value' => 'XL'],
+            ['key' => 'color', 'value' => 'كحلي'],
         ]);
         $address = Address::create([
             'user_id' => $buyer->id,

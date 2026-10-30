@@ -1,6 +1,3 @@
 # Tasks
 
-## CartController Functions
-
-- validateCart() → التحقق من صحة السلة قبل الدفع
-
+# snapshot as json not table in database

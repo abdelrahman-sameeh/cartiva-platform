@@ -41,8 +41,6 @@ class OrderItem extends Model
         'price_at_purchase',
         'variant_sku',
         'variant_options',
-        'size',
-        'color',
         'quantity',
         'created_at_snapshot',
     ];

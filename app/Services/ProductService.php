@@ -87,7 +87,9 @@ class ProductService
             $oldCoverPath = str_replace('/storage/', '', $product->cover_image);
         }
 
-        $product = DB::transaction(function () use ($product, $data) {
+        $deletedPicturePaths = [];
+
+        $product = DB::transaction(function () use ($product, $data, &$deletedPicturePaths) {
             $product->update(collect($data)->only([
                 'title',
                 'description',
@@ -127,11 +129,30 @@ class ProductService
                 );
             }
 
+            if (! empty($data['deleted_picture_ids'])) {
+                $picturesToDelete = $product->pictures()
+                    ->whereKey($data['deleted_picture_ids'])
+                    ->get();
+
+                $deletedPicturePaths = $picturesToDelete
+                    ->pluck('picture')
+                    ->map(fn (string $path): string => str_replace('/storage/', '', $path))
+                    ->all();
+
+                $product->pictures()
+                    ->whereKey($picturesToDelete->modelKeys())
+                    ->delete();
+            }
+
             return $product->refresh();
         });
 
         if ($oldCoverPath) {
             Storage::disk('public')->delete($oldCoverPath);
+        }
+
+        if ($deletedPicturePaths) {
+            Storage::disk('public')->delete($deletedPicturePaths);
         }
 
         return $product;

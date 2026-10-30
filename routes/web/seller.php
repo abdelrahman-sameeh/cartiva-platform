@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Web\CouponWebController;
 use App\Http\Controllers\Web\ProductWebController;
+use App\Http\Controllers\Web\SellerFeeCalculatorController;
 use App\Http\Controllers\Web\StripeConnectController;
 use Illuminate\Support\Facades\Route;
 
@@ -16,6 +17,8 @@ Route::middleware(['auth', 'roles:seller'])
         Route::get('/products/{product}/edit', [ProductWebController::class, 'edit'])->name('products.edit');
         Route::put('/products/{product}', [ProductWebController::class, 'update'])->name('products.update');
         Route::delete('/products/{product}', [ProductWebController::class, 'destroy'])->name('products.destroy');
+
+        Route::get('/fee-calculator', SellerFeeCalculatorController::class)->name('fee-calculator');
 
         Route::get('/coupons', [CouponWebController::class, 'index'])->name('coupons.index');
         Route::get('/coupons/create', [CouponWebController::class, 'create'])->name('coupons.create');

@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Facades\Storage;
 use Str;
 
@@ -118,4 +119,9 @@ class Product extends Model
     {
         return $this->belongsToMany(SubCategory::class, ProductSubCategory::class, 'product_id', 'sub_category_id');
     }
+
+    public function reviews(): HasMany{
+        return $this->hasMany(Review::class);
+    }
+
 }

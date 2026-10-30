@@ -23,7 +23,10 @@ class OrderCheckoutService
         Payment::STATUS_PENDING,
     ];
 
-    public function __construct(private readonly StripeCheckoutGateway $stripe) {}
+    public function __construct(
+        private readonly StripeCheckoutGateway $stripe,
+        private readonly SellerTransferService $sellerTransfers
+    ) {}
 
     public function checkoutUrl(
         User $customer,
@@ -84,11 +87,15 @@ class OrderCheckoutService
 
     public function handleWebhook(string $eventId, string $type, Session $session): void
     {
-        DB::transaction(function () use ($eventId, $type, $session): void {
+        $paidOrderId = DB::transaction(function () use ($eventId, $type, $session): ?int {
             $event = StripeWebhookEvent::pending($eventId, $type);
 
             if (! $event) {
-                return;
+                return Payment::query()
+                    ->where('provider', 'stripe')
+                    ->where('checkout_session_id', $session->id)
+                    ->where('status', Payment::STATUS_PAID)
+                    ->value('order_id');
             }
 
             $payment = Payment::query()
@@ -100,7 +107,7 @@ class OrderCheckoutService
             if (! $payment) {
                 $event->markProcessed();
 
-                return;
+                return null;
             }
 
             if (in_array($type, ['checkout.session.completed', 'checkout.session.async_payment_succeeded'], true)) {
@@ -114,7 +121,15 @@ class OrderCheckoutService
             }
 
             $event->markProcessed();
+
+            return $payment->status === Payment::STATUS_PAID
+                ? (int) $payment->order_id
+                : null;
         });
+
+        if ($paidOrderId) {
+            $this->sellerTransfers->processPaidOrder($paidOrderId);
+        }
     }
 
     private function pendingPayment(User $customer, Order $order): Payment

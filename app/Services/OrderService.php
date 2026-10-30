@@ -130,8 +130,6 @@ class OrderService
                         'price_at_purchase' => $item->variant->priceAfterDiscount(),
                         'variant_sku' => $item->variant->sku,
                         'variant_options' => $item->variant->option_values,
-                        'size' => null,
-                        'color' => null,
                         'quantity' => $item->quantity,
                         'created_at_snapshot' => $product->created_at,
                     ]);

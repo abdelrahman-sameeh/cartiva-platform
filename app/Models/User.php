@@ -5,7 +5,9 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use App\Enums\RoleName;
 use App\Models\Cart\Cart;
+use App\Models\Order\Order;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -158,6 +160,11 @@ class User extends Authenticatable
         return $query;
     }
 
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
     public function addresses()
     {
         return $this->hasMany(Address::class, "user_id");
@@ -172,5 +179,22 @@ class User extends Authenticatable
     {
         return $this->hasOne(SellerStripeAccount::class, 'seller_id');
     }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class);
+    }
+
+    public function hasPurchasedProduct(int $productId)
+    {
+        return $this->orders()
+            ->where('status', 'completed')
+            ->whereHas('subOrders.items', function ($query) use ($productId) {
+                $query->where('product_id', $productId);
+            })
+            ->exists();
+    }
+
+
 
 }

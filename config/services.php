@@ -41,6 +41,14 @@ return [
             'country' => env('STRIPE_CONNECT_COUNTRY'),
             'webhook_secret' => env('STRIPE_CONNECT_WEBHOOK_SECRET'),
         ],
+        'fees' => [
+            'platform_commission_bps' => (int) env('PLATFORM_COMMISSION_BPS', 500),
+            'estimated_processing_bps' => (int) env('STRIPE_ESTIMATED_PROCESSING_BPS', 290),
+            'estimated_currency_conversion_bps' => (int) env('STRIPE_ESTIMATED_CURRENCY_CONVERSION_BPS', 100),
+            'estimated_international_bps' => (int) env('STRIPE_ESTIMATED_INTERNATIONAL_BPS', 150),
+            'estimated_fixed_usd_minor' => (int) env('STRIPE_ESTIMATED_FIXED_USD_MINOR', 30),
+            'estimated_usd_egp_rate' => (float) env('STRIPE_ESTIMATED_USD_EGP_RATE', 56),
+        ],
     ],
 
 ];

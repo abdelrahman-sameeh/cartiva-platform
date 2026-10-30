@@ -50,11 +50,11 @@ class StripeConnectWebhookTest extends TestCase
 
     public function test_a_repeated_account_event_is_processed_once(): void
     {
-        User::factory()->create()->stripeAccount()->create([
+        $account = User::factory()->create()->stripeAccount()->create([
             'stripe_account_id' => 'acct_seller',
         ]);
         $service = Mockery::mock(SellerOnboardingService::class);
-        $service->shouldReceive('sync')->once();
+        $service->shouldReceive('sync')->once()->andReturn($account);
         $this->app->instance(SellerOnboardingService::class, $service);
 
         $this->postSignedEvent('v2.core.account.updated', 'acct_seller')->assertNoContent();

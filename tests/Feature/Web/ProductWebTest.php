@@ -29,6 +29,45 @@ class ProductWebTest extends TestCase
             ->assertForbidden();
     }
 
+    public function test_seller_sees_the_guided_product_creation_form(): void
+    {
+        $seller = User::create([
+            'first_name' => 'Guided',
+            'last_name' => 'Seller',
+            'email' => 'guided-seller@example.com',
+            'password' => 'password123',
+        ]);
+        $seller->syncRoles(RoleName::SELLER);
+        $category = Category::create(['title' => 'Home']);
+        $subCategory = SubCategory::create([
+            'title' => 'Kitchen',
+            'category_id' => $category->id,
+        ]);
+
+        $this->actingAs($seller)
+            ->get(route('seller.products.create'))
+            ->assertOk()
+            ->assertSee(route('seller.fee-calculator'), false)
+            ->assertSee('احسب الربح والرسوم')
+            ->assertSee('المعلومات الأساسية')
+            ->assertSee('النسخ والمخزون')
+            ->assertSee('اختيارات النسخة')
+            ->assertSee('مواصفات المنتج')
+            ->assertSeeInOrder([
+                'المعلومات الأساسية',
+                'صور المنتج',
+                'التصنيفات',
+                'التسعير',
+                'النسخ والمخزون',
+                'مواصفات المنتج',
+            ])
+            ->assertSee('pricing-final-price', false)
+            ->assertSee('gallery-preview', false)
+            ->assertSee('name="sub_categories[]"', false)
+            ->assertSee('name="variants[0][stock]"', false)
+            ->assertSee('Kitchen');
+    }
+
     public function test_seller_can_create_a_product_from_web(): void
     {
         Storage::fake('public');
@@ -165,6 +204,8 @@ class ProductWebTest extends TestCase
 
     public function test_seller_can_edit_their_product_and_replace_attributes(): void
     {
+        Storage::fake('public');
+
         $seller = User::create([
             'first_name' => 'Seller',
             'last_name' => 'User',
@@ -191,11 +232,35 @@ class ProductWebTest extends TestCase
             'option_signature' => hash('sha256', json_encode(['size' => 'm'])),
         ]);
         $oldVariant->options()->create(['key' => 'size', 'value' => 'M']);
+        $pictures = $product->pictures()->createMany([
+            ['picture' => '/storage/products/gallery/old-shirt-front.png'],
+            ['picture' => '/storage/products/gallery/old-shirt-back.png'],
+        ]);
+        Storage::disk('public')->put('products/gallery/old-shirt-front.png', 'front');
+        Storage::disk('public')->put('products/gallery/old-shirt-back.png', 'back');
 
         $this->actingAs($seller)
             ->get(route('seller.products.edit', $product))
             ->assertOk()
-            ->assertSee('Old Shirt');
+            ->assertSee('تعديل Old Shirt')
+            ->assertSee('حفظ التعديلات')
+            ->assertSee('name="_method"', false)
+            ->assertSee($product->cover_image_url, false)
+            ->assertSee('id="existing-gallery-count">2</span>', false)
+            ->assertSee($pictures[0]->picture_url, false)
+            ->assertSee($pictures[1]->picture_url, false)
+            ->assertSee('id="existing-gallery-preview"', false)
+            ->assertSee('data-remove-existing-picture', false)
+            ->assertSee('id="product-image-dialog"', false)
+            ->assertSee('id="new-gallery-group" hidden', false)
+            ->assertSeeInOrder([
+                'المعلومات الأساسية',
+                'صور المنتج',
+                'التصنيفات',
+                'التسعير',
+                'النسخ والمخزون',
+                'مواصفات المنتج',
+            ]);
 
         $this->actingAs($seller)
             ->put(route('seller.products.update', $product), [
@@ -214,6 +279,17 @@ class ProductWebTest extends TestCase
                     ],
                 ],
                 'sub_categories' => [$subCategory->id],
+                'product_pictures' => [
+                    UploadedFile::fake()->createWithContent(
+                        'new-shirt-side.png',
+                        base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=')
+                    ),
+                    UploadedFile::fake()->createWithContent(
+                        'new-shirt-detail.png',
+                        base64_decode('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=')
+                    ),
+                ],
+                'deleted_picture_ids' => [$pictures[0]->id],
                 'attributes' => [
                     ['key' => 'Size', 'value' => 'Large'],
                     ['key' => 'Material', 'value' => 'Cotton'],
@@ -249,6 +325,14 @@ class ProductWebTest extends TestCase
             'key' => 'material',
             'value' => 'Cotton',
         ]);
+        $this->assertCount(3, $product->refresh()->pictures);
+        $this->assertDatabaseMissing('product_pictures', ['id' => $pictures[0]->id]);
+        $this->assertDatabaseHas('product_pictures', ['id' => $pictures[1]->id]);
+        Storage::disk('public')->assertMissing('products/gallery/old-shirt-front.png');
+        Storage::disk('public')->assertExists('products/gallery/old-shirt-back.png');
+        $product->pictures->skip(1)->each(function ($picture): void {
+            Storage::disk('public')->assertExists(str_replace('/storage/', '', $picture->picture));
+        });
     }
 
     public function test_seller_can_delete_their_product_and_its_images(): void
@@ -283,6 +367,42 @@ class ProductWebTest extends TestCase
         $this->assertDatabaseMissing('products', ['id' => $product->id]);
         Storage::disk('public')->assertMissing('products/covers/delete-cover.png');
         Storage::disk('public')->assertMissing('products/gallery/delete-gallery.png');
+    }
+
+    public function test_seller_cannot_delete_a_picture_through_another_product_update(): void
+    {
+        $seller = User::create([
+            'first_name' => 'Gallery',
+            'last_name' => 'Seller',
+            'email' => 'gallery-seller@example.com',
+            'password' => 'password123',
+        ]);
+        $seller->syncRoles(RoleName::SELLER);
+        $firstProduct = $seller->products()->create([
+            'title' => 'First Product',
+            'description' => 'The first product used in the gallery security test.',
+            'cover_image' => '/storage/products/covers/first.png',
+            'price' => 100,
+        ]);
+        $secondProduct = $seller->products()->create([
+            'title' => 'Second Product',
+            'description' => 'The second product owns the protected gallery picture.',
+            'cover_image' => '/storage/products/covers/second.png',
+            'price' => 200,
+        ]);
+        $protectedPicture = $secondProduct->pictures()->create([
+            'picture' => '/storage/products/gallery/protected.png',
+        ]);
+
+        $this->actingAs($seller)
+            ->from(route('seller.products.edit', $firstProduct))
+            ->put(route('seller.products.update', $firstProduct), [
+                'deleted_picture_ids' => [$protectedPicture->id],
+            ])
+            ->assertRedirect(route('seller.products.edit', $firstProduct))
+            ->assertSessionHasErrors('deleted_picture_ids.0');
+
+        $this->assertDatabaseHas('product_pictures', ['id' => $protectedPicture->id]);
     }
 
     public function test_seller_cannot_manage_another_sellers_product(): void

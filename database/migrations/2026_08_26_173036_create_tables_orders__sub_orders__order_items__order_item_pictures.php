@@ -79,8 +79,6 @@ return new class extends Migration
             $table->decimal('price_at_purchase', 10, 2);
             $table->string('variant_sku', 100)->nullable();
             $table->json('variant_options')->nullable();
-            $table->string('size', 30)->nullable();
-            $table->string('color', 50)->nullable();
             $table->unsignedInteger('quantity');
             // Copied from products.created_at, which is itself nullable.
             $table->timestamp('created_at_snapshot')->nullable();

@@ -7,3 +7,4 @@ require __DIR__.'/web/cart.php';
 require __DIR__.'/web/orders.php';
 require __DIR__.'/web/seller.php';
 require __DIR__.'/web/admin.php';
+require __DIR__.'/web/reviews.php';

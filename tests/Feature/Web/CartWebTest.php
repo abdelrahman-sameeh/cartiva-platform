@@ -5,7 +5,9 @@ namespace Tests\Feature\Web;
 use App\Enums\RoleName;
 use App\Models\Coupon;
 use App\Models\Product;
+use App\Models\ProductVariant;
 use App\Models\User;
+use App\Support\ProductVariantOptions;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -56,11 +58,7 @@ class CartWebTest extends TestCase
         $buyer = $this->createBuyer('variants-buyer@example.com');
         $product = $this->createProduct($this->createSeller(), 'تيشيرت متعدد الاختيارات');
         $mediumBlack = $product->variants()->firstOrFail();
-        $largeBlue = $product->variants()->create([
-            'size' => 'L',
-            'color' => 'أزرق',
-            'stock' => 1,
-        ]);
+        $largeBlue = $this->createVariant($product, ['size' => 'L', 'color' => 'أزرق'], 1);
 
         $this->actingAs($buyer)
             ->post(route('cart.items.store'), [
@@ -117,11 +115,7 @@ class CartWebTest extends TestCase
         $buyer = $this->createBuyer('change-variant@example.com');
         $product = $this->createProduct($this->createSeller(), 'قميص متعدد المقاسات');
         $mediumBlack = $product->variants()->firstOrFail();
-        $largeBlue = $product->variants()->create([
-            'size' => 'L',
-            'color' => 'أزرق',
-            'stock' => 4,
-        ]);
+        $largeBlue = $this->createVariant($product, ['size' => 'L', 'color' => 'أزرق'], 4);
         $item = $buyer->cart()->create()->items()->create([
             'product_id' => $product->id,
             'product_variant_id' => $mediumBlack->id,
@@ -262,13 +256,26 @@ class CartWebTest extends TestCase
             'seller_id' => $seller->id,
             'is_active' => true,
         ]);
-        $product->variants()->create([
-            'size' => 'M',
-            'color' => 'أسود',
-            'stock' => 10,
-        ]);
+        $this->createVariant($product, ['size' => 'M', 'color' => 'أسود'], 10);
 
         return $product;
+    }
+
+    /** @param array<string, string> $options */
+    private function createVariant(Product $product, array $options, int $stock): ProductVariant
+    {
+        $variant = $product->variants()->create([
+            'stock' => $stock,
+            'option_signature' => ProductVariantOptions::signature($options),
+        ]);
+        $variant->options()->createMany(
+            collect($options)
+                ->map(fn (string $value, string $key): array => compact('key', 'value'))
+                ->values()
+                ->all()
+        );
+
+        return $variant;
     }
 
     private function createCoupon(User $seller, string $code): Coupon

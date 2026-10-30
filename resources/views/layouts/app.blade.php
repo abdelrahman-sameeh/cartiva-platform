@@ -155,6 +155,12 @@
                                                 استلام الأرباح
                                             </a>
                                         </li>
+                                        <li>
+                                            <a class="dropdown-item" href="{{ route('seller.fee-calculator') }}">
+                                                <i class="bi bi-calculator" aria-hidden="true"></i>
+                                                حاسبة الأرباح
+                                            </a>
+                                        </li>
                                     @endif
 
                                     @if (auth()->user()->hasRole(\App\Enums\RoleName::ADMIN))

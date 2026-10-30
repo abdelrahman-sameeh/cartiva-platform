@@ -59,7 +59,7 @@ class ProductWebController extends Controller
     {
         $product = $this->ownedProduct($request, $product);
 
-        return view('products.edit', [
+        return view('products.create', [
             'product' => $product->load('attributes', 'sub_categories', 'pictures', 'variants.options'),
             'subCategories' => SubCategory::with('category')->orderBy('title')->get(),
         ]);

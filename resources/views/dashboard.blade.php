@@ -116,6 +116,15 @@
                                 </span>
                                 <i class="bi bi-arrow-left account-action-arrow" aria-hidden="true"></i>
                             </a>
+
+                            <a class="account-action" href="{{ route('seller.fee-calculator') }}">
+                                <span class="account-action-icon"><i class="bi bi-calculator" aria-hidden="true"></i></span>
+                                <span class="account-action-copy">
+                                    <strong>حاسبة الأرباح</strong>
+                                    <small>احسب الرسوم وصافي ربح المنتج قبل نشره</small>
+                                </span>
+                                <i class="bi bi-arrow-left account-action-arrow" aria-hidden="true"></i>
+                            </a>
                         </div>
                     </section>
                 @endif

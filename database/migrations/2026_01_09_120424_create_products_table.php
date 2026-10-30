@@ -38,8 +38,6 @@ return new class extends Migration
             $table->id();
             $table->foreignId('product_id')->constrained('products')->cascadeOnDelete();
             $table->string('sku', 100)->nullable()->index();
-            $table->string('size', 30)->nullable();
-            $table->string('color', 50)->nullable();
             $table->decimal('price', 10, 2)->nullable();
             $table->unsignedInteger('stock')->default(0);
             $table->char('option_signature', 64)->nullable();

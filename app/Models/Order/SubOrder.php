@@ -2,8 +2,10 @@
 
 namespace App\Models\Order;
 
+use App\Models\SellerTransfer;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * @property int $id
@@ -15,7 +17,6 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $status
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
- *
  * @property-read Order $order
  * @property-read User $seller
  * @property-read \Illuminate\Database\Eloquent\Collection<int, OrderItem> $items
@@ -35,8 +36,8 @@ class SubOrder extends Model
     ];
 
     protected $casts = [
-        'subtotal'    => 'decimal:2',
-        'discount'    => 'decimal:2',
+        'subtotal' => 'decimal:2',
+        'discount' => 'decimal:2',
         'total_price' => 'decimal:2',
     ];
 
@@ -55,5 +56,10 @@ class SubOrder extends Model
     public function items()
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function sellerTransfer(): HasOne
+    {
+        return $this->hasOne(SellerTransfer::class);
     }
 }

@@ -40,8 +40,6 @@ class OrderApiTest extends TestCase
             'title' => 'تيشيرت طلب API',
             'price_at_purchase' => 110,
             'variant_sku' => 'PHONE-256-BLK',
-            'size' => null,
-            'color' => null,
             'quantity' => 2,
         ]);
         $orderItem = Order::query()->findOrFail($orderId)->subOrders()->firstOrFail()->items()->firstOrFail();

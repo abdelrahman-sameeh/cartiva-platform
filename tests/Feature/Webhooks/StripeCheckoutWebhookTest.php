@@ -5,7 +5,9 @@ namespace Tests\Feature\Webhooks;
 use App\Models\Order\Order;
 use App\Models\Payment;
 use App\Models\User;
+use App\Services\Payments\SellerTransferService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Mockery;
 use Tests\TestCase;
 
 class StripeCheckoutWebhookTest extends TestCase
@@ -19,6 +21,9 @@ class StripeCheckoutWebhookTest extends TestCase
         parent::setUp();
 
         config(['services.stripe.checkout.webhook_secret' => self::WEBHOOK_SECRET]);
+        $sellerTransfers = Mockery::mock(SellerTransferService::class);
+        $sellerTransfers->shouldReceive('processPaidOrder')->zeroOrMoreTimes();
+        $this->app->instance(SellerTransferService::class, $sellerTransfers);
     }
 
     public function test_a_signed_paid_session_marks_the_order_paid_once(): void

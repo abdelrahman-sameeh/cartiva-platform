@@ -222,6 +222,28 @@
                     </div>
                 </div>
             </div>
+
+
+            @error('product_id')
+                <div class="text-danger small">{{ $message }}</div>
+            @enderror
+
+            @error('rating')
+                <div class="text-danger small">{{ $message }}</div>
+            @enderror
+
+            @error('comment')
+                <div class="text-danger small">{{ $message }}</div>
+            @enderror
+
+            <form action="{{ route('reviews.store') }}" method="post">
+                @csrf
+                <input type="hidden" name="product_id" value="{{ $product->id }}">
+                <input type="number" min="1" max="5" name="rating">
+                <textarea name="comment" rows="10" placeholder="Review"></textarea>
+                <button type="submit">Review</button>
+            </form>
+
         </div>
     </div>
 @endsection
