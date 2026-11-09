@@ -108,7 +108,7 @@ class OrderApiTest extends TestCase
         $otherSeller = $this->createSeller('other-seller@example.com');
         Sanctum::actingAs($otherSeller);
 
-        $this->putJson("/api/seller/sub-orders/{$subOrder->id}/status", ['status' => 'shipped'])
+        $this->putJson("/api/seller/sub-orders/{$subOrder->id}/status", ['status' => 'processing'])
             ->assertForbidden();
     }
 

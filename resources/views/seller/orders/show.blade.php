@@ -72,6 +72,38 @@
           </div>
         </div>
 
+        @if ($subOrder->shipment)
+          @php
+            $shipmentStatuses = [
+              'created' => 'تم إنشاء الشحنة',
+              'picked_up' => 'استلمتها شركة الشحن',
+              'in_transit' => 'في الطريق للعميل',
+              'delivered' => 'تم التسليم',
+              'returned' => 'مرتجع',
+              'cancelled' => 'ملغاة',
+            ];
+            $codStatuses = [
+              'not_applicable' => 'غير مطبق',
+              'awaiting_collection' => 'بانتظار التحصيل',
+              'collected' => 'تم التحصيل',
+              'remitted' => 'وصل التحصيل للمنصة',
+              'refunded' => 'تم رد المبلغ',
+            ];
+          @endphp
+          <div class="dashboard-card card border-0 mb-4">
+            <div class="card-body p-4">
+              <h2 class="h5 fw-bold mb-3">شركة الشحن التجريبية</h2>
+              <p class="mb-2"><strong>رقم التتبع:</strong> <span dir="ltr">{{ $subOrder->shipment->tracking_number }}</span></p>
+              <p class="mb-2"><strong>الشحنة:</strong> {{ $shipmentStatuses[$subOrder->shipment->status] }}</p>
+              <p class="mb-2"><strong>COD:</strong> {{ $codStatuses[$subOrder->shipment->cod_status] }}</p>
+              @if ($subOrder->order->payment_method === 'cash')
+                <p class="mb-2"><strong>المحصل:</strong> {{ number_format((float) $subOrder->shipment->cod_amount, 2) }} جنيه</p>
+                <p class="mb-0"><strong>صافي مستحقك:</strong> {{ number_format((float) $subOrder->shipment->seller_net, 2) }} جنيه</p>
+              @endif
+            </div>
+          </div>
+        @endif
+
         @php
           $paymentMethodLabels = [
             'cash' => 'الدفع عند الاستلام',
@@ -103,10 +135,9 @@
               <label class="form-label fw-semibold" for="status">الحالة الجديدة</label>
               <select class="form-select" id="status" name="status" required>
                 <option value="processing" @selected($subOrder->status === 'processing')>قيد التجهيز</option>
-                <option value="shipped" @selected($subOrder->status === 'shipped')>تم الشحن</option>
-                <option value="completed" @selected($subOrder->status === 'completed')>مكتمل</option>
                 <option value="cancelled" @selected($subOrder->status === 'cancelled')>ملغي</option>
               </select>
+              <small class="text-muted-custom d-block mt-2">الشحن والتسليم والتحصيل تحدّثها شركة الشحن.</small>
               <button class="btn btn-brand w-100 mt-3" type="submit">حفظ الحالة</button>
             </form>
           </div>

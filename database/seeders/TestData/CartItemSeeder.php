@@ -2,7 +2,7 @@
 
 namespace Database\Seeders\TestData;
 
-use App\Models\Cart\Cart;
+use App\Enums\RoleName;
 use App\Models\Cart\CartItem;
 use App\Models\Product;
 use App\Models\User;
@@ -12,30 +12,25 @@ class CartItemSeeder extends Seeder
 {
     public function run(): void
     {
-        $cartItems = [
-            'buyer1@gmail.com' => [
-                'تيشيرت أسود كلاسيك' => 1,
-                'جاكيت هودي حضري' => 2,
-            ],
-            'buyer2@gmail.com' => [
-                'فستان كتان موف' => 1,
-                'شورت أطفال سماوي' => 1,
-            ],
-        ];
+        $products = Product::query()->with('variants')->orderBy('id')->get();
+        $buyers = User::query()
+            ->whereHas('roles', fn ($query) => $query->where('name', RoleName::USER->value))
+            ->orderBy('id')
+            ->limit(18)
+            ->get();
 
-        foreach ($cartItems as $buyerEmail => $products) {
-            $buyer = User::query()->where('email', $buyerEmail)->firstOrFail();
-            $cart = Cart::query()->where('user_id', $buyer->id)->firstOrFail();
+        foreach ($buyers as $buyerIndex => $buyer) {
+            $itemCount = 2 + ($buyerIndex % 3);
 
-            foreach ($products as $productTitle => $quantity) {
-                $product = Product::query()->where('title', $productTitle)->firstOrFail();
-                $variant = $product->variants()->where('stock', '>=', $quantity)->firstOrFail();
+            for ($itemIndex = 0; $itemIndex < $itemCount; $itemIndex++) {
+                $product = $products[($buyerIndex * 5 + $itemIndex * 7) % $products->count()];
+                $variant = $product->variants[($buyerIndex + $itemIndex) % $product->variants->count()];
 
                 CartItem::create([
-                    'cart_id' => $cart->id,
+                    'cart_id' => $buyer->cart->id,
                     'product_id' => $product->id,
                     'product_variant_id' => $variant->id,
-                    'quantity' => $quantity,
+                    'quantity' => 1 + (($buyerIndex + $itemIndex) % 2),
                 ]);
             }
         }

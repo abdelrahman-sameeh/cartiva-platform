@@ -85,7 +85,8 @@
                             </span>
                         @endif
                         <strong class="text-brand fs-2 d-block mb-4" id="variant-price">
-                            {{ number_format($selectedVariant?->priceAfterDiscount($product) ?? $product->price_after_discount, 2) }} جنيه
+                            {{ number_format($selectedVariant?->priceAfterDiscount($product) ?? $product->price_after_discount, 2) }}
+                            جنيه
                         </strong>
 
                         <div class="d-flex justify-content-between py-3 border-top">
@@ -130,7 +131,8 @@
                                                 id="variant-selector" required>
                                                 @foreach ($availableVariants as $variant)
                                                     <option value="{{ $variant->id }}" @selected($selectedVariant?->id === $variant->id)>
-                                                        {{ $variant->option_label }} — {{ number_format($variant->priceAfterDiscount($product), 2) }} جنيه
+                                                        {{ $variant->option_label }} —
+                                                        {{ number_format($variant->priceAfterDiscount($product), 2) }} جنيه
                                                         ({{ $variant->stock }} متاح)
                                                     </option>
                                                 @endforeach
@@ -224,25 +226,143 @@
             </div>
 
 
-            @error('product_id')
-                <div class="text-danger small">{{ $message }}</div>
-            @enderror
+            <div class="col-12" id="reviews">
+                <div class="dashboard-card card border-0">
+                    <div class="card-body p-4 p-lg-5">
+                        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
+                            <div>
+                                <h2 class="h4 fw-bold mb-1">تقييمات العملاء</h2>
+                                <p class="text-muted-custom mb-0">
+                                    {{ number_format((float) $product->rating_avg, 1) }} من 5
+                                    · {{ $product->rating_count }} تقييم
+                                </p>
+                            </div>
+                            <div class="review-stars" aria-label="متوسط التقييم {{ $product->rating_avg }} من 5">
+                                @for ($star = 1; $star <= 5; $star++)
+                                    <span class="{{ $star <= round((float) $product->rating_avg) ? 'is-active' : '' }}">★</span>
+                                @endfor
+                            </div>
+                        </div>
 
-            @error('rating')
-                <div class="text-danger small">{{ $message }}</div>
-            @enderror
+                        @auth
+                            @if ($currentReview)
+                                <div class="review-editor mb-4">
+                                    <h3 class="h6 fw-bold mb-3">عدّل تقييمك</h3>
+                                    <form method="POST" action="{{ route('reviews.update', $currentReview) }}">
+                                        @csrf
+                                        @method('PATCH')
+                                        <div class="row g-3">
+                                            <div class="col-md-3">
+                                                <label class="form-label fw-semibold" for="review-rating">التقييم</label>
+                                                <select class="form-select @error('rating') is-invalid @enderror" id="review-rating"
+                                                    name="rating" required>
+                                                    @foreach ([5, 4, 3, 2, 1] as $rating)
+                                                        <option value="{{ $rating }}" @selected((int) old('rating', $currentReview->rating) === $rating)>
+                                                            {{ $rating }} نجوم
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                                @error('rating')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                            <div class="col-md-9">
+                                                <label class="form-label fw-semibold" for="review-comment">رأيك</label>
+                                                <textarea class="form-control @error('comment') is-invalid @enderror"
+                                                    id="review-comment" name="comment" rows="3" maxlength="1000"
+                                                    placeholder="اكتب تجربتك مع المنتج">{{ old('comment', $currentReview->comment) }}</textarea>
+                                                @error('comment')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                        <button class="btn btn-brand mt-3" type="submit">حفظ التعديل</button>
+                                    </form>
+                                    <form class="mt-2" method="POST" action="{{ route('reviews.destroy', $currentReview) }}"
+                                        onsubmit="return confirm('هل تريد حذف تقييمك؟')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button class="btn btn-outline-danger" type="submit">حذف التقييم</button>
+                                    </form>
+                                </div>
+                            @elseif ($canReview)
+                                <div class="review-editor mb-4">
+                                    <h3 class="h6 fw-bold mb-3">شارك تجربتك</h3>
+                                    <form method="POST" action="{{ route('reviews.store') }}">
+                                        @csrf
+                                        <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                        <div class="row g-3">
+                                            <div class="col-md-3">
+                                                <label class="form-label fw-semibold" for="review-rating">التقييم</label>
+                                                <select class="form-select @error('rating') is-invalid @enderror" id="review-rating"
+                                                    name="rating" required>
+                                                    <option value="">اختر</option>
+                                                    @foreach ([5, 4, 3, 2, 1] as $rating)
+                                                        <option value="{{ $rating }}" @selected((int) old('rating') === $rating)>
+                                                            {{ $rating }} نجوم
+                                                        </option>
+                                                    @endforeach
+                                                </select>
+                                                @error('rating')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                            <div class="col-md-9">
+                                                <label class="form-label fw-semibold" for="review-comment">رأيك</label>
+                                                <textarea class="form-control @error('comment') is-invalid @enderror"
+                                                    id="review-comment" name="comment" rows="3" maxlength="1000"
+                                                    placeholder="اكتب تجربتك مع المنتج">{{ old('comment') }}</textarea>
+                                                @error('comment')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                            </div>
+                                        </div>
+                                        @error('product_id')
+                                            <div class="text-danger small mt-2">{{ $message }}</div>
+                                        @enderror
+                                        <button class="btn btn-brand mt-3" type="submit">نشر التقييم</button>
+                                    </form>
+                                </div>
+                            @else
+                                <div class="alert alert-light border mb-4">
+                                    يمكنك إضافة تقييم بعد شراء هذا المنتج.
+                                </div>
+                            @endif
+                        @else
+                            <div class="alert alert-light border mb-4">
+                                <a href="{{ route('login') }}">سجّل الدخول</a> لإضافة تقييم بعد شراء المنتج.
+                            </div>
+                        @endauth
 
-            @error('comment')
-                <div class="text-danger small">{{ $message }}</div>
-            @enderror
+                        <div class="d-grid gap-3">
+                            @forelse ($reviews as $review)
+                                <article class="review-item">
+                                    <div class="d-flex flex-wrap justify-content-between gap-2 mb-2">
+                                        <strong>
+                                            {{ $review->user ? trim($review->user->first_name . ' ' . $review->user->last_name) : 'مستخدم سابق' }}
+                                        </strong>
+                                        <span class="text-muted-custom small">{{ $review->created_at->diffForHumans() }}</span>
+                                    </div>
+                                    <div class="review-stars review-stars-sm mb-2" aria-label="{{ $review->rating }} من 5">
+                                        @for ($star = 1; $star <= 5; $star++)
+                                            <span class="{{ $star <= $review->rating ? 'is-active' : '' }}">★</span>
+                                        @endfor
+                                    </div>
+                                    @if ($review->comment)
+                                        <p class="mb-0" style="white-space: pre-line;">{{ $review->comment }}</p>
+                                    @endif
+                                </article>
+                            @empty
+                                <p class="text-muted-custom mb-0">لا توجد تقييمات لهذا المنتج حتى الآن.</p>
+                            @endforelse
+                        </div>
 
-            <form action="{{ route('reviews.store') }}" method="post">
-                @csrf
-                <input type="hidden" name="product_id" value="{{ $product->id }}">
-                <input type="number" min="1" max="5" name="rating">
-                <textarea name="comment" rows="10" placeholder="Review"></textarea>
-                <button type="submit">Review</button>
-            </form>
+                        @if ($reviews->hasPages())
+                            <div class="mt-4">{{ $reviews->links() }}</div>
+                        @endif
+                    </div>
+                </div>
+            </div>
 
         </div>
     </div>
@@ -291,6 +411,28 @@
         .variant-quantity-picker .quantity-action {
             padding-inline: 0;
             font-size: 1.35rem;
+        }
+
+        .review-editor,
+        .review-item {
+            padding: 1rem;
+            border: 1px solid rgba(49, 93, 125, .14);
+            border-radius: 1rem;
+            background: var(--surface);
+        }
+
+        .review-stars {
+            color: #d0d5dd;
+            font-size: 1.5rem;
+            letter-spacing: .1rem;
+        }
+
+        .review-stars-sm {
+            font-size: 1rem;
+        }
+
+        .review-stars .is-active {
+            color: #f4b740;
         }
     </style>
 @endpush

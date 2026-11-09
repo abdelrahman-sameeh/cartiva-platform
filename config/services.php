@@ -51,4 +51,10 @@ return [
         ],
     ],
 
+    'demo_shipping' => [
+        'platform_commission_bps' => (int) env('PLATFORM_COMMISSION_BPS', 500),
+        'shipping_fee' => (float) env('DEMO_SHIPPING_FEE', 0),
+        'cod_collection_bps' => (int) env('DEMO_COD_COLLECTION_BPS', 100),
+    ],
+
 ];

@@ -2,6 +2,7 @@
 
 namespace Database\Seeders\TestData;
 
+use App\Enums\RoleName;
 use App\Models\Address;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -10,35 +11,22 @@ class AddressSeeder extends Seeder
 {
     public function run(): void
     {
-        $buyer1 = User::query()->where('email', 'buyer1@gmail.com')->firstOrFail();
-        $buyer2 = User::query()->where('email', 'buyer2@gmail.com')->firstOrFail();
+        $cities = ['القاهرة', 'الجيزة', 'الإسكندرية', 'المنصورة', 'طنطا', 'الزقازيق', 'أسيوط', 'سوهاج'];
+        $streets = ['شارع التحرير', 'شارع النصر', 'شارع الجمهورية', 'شارع البحر', 'شارع الجامعة'];
 
-        Address::create([
-            'user_id' => $buyer1->id,
-            'country' => 'EG',
-            'city' => 'القاهرة',
-            'street' => '١٥ ميدان التحرير، وسط البلد',
-            'is_default' => true,
-            'note' => 'بجوار محطة المترو',
-            'latitude' => 30.0444,
-            'longitude' => 31.2357,
-        ]);
-
-        Address::create([
-            'user_id' => $buyer1->id,
-            'country' => 'EG',
-            'city' => 'الجيزة',
-            'street' => '٢٢ شارع الهرم',
-            'is_default' => false,
-            'note' => 'بالقرب من المركز التجاري',
-        ]);
-
-        Address::create([
-            'user_id' => $buyer2->id,
-            'country' => 'EG',
-            'city' => 'الإسكندرية',
-            'street' => '٥ طريق الكورنيش',
-            'is_default' => true,
-        ]);
+        User::query()
+            ->whereHas('roles', fn ($query) => $query->where('name', RoleName::USER->value))
+            ->orderBy('id')
+            ->get()
+            ->each(function (User $buyer, int $index) use ($cities, $streets): void {
+                Address::create([
+                    'user_id' => $buyer->id,
+                    'country' => 'EG',
+                    'city' => $cities[$index % count($cities)],
+                    'street' => (10 + $index).' '.$streets[$index % count($streets)],
+                    'is_default' => true,
+                    'note' => $index % 3 === 0 ? 'يرجى الاتصال قبل الوصول' : null,
+                ]);
+            });
     }
 }

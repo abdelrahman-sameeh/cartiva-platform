@@ -1,11 +1,24 @@
-# مصادر صور بيانات الاختبار
+# صور منتجات بيانات الاختبار
 
-الصور التالية محفوظة محليًا في `public/images/products` ومستخدمة فقط لبيانات التطوير التجريبية.
-جميع صفحات الصور تشير إلى أنها متاحة بموجب ترخيص Unsplash.
+صور الكتالوج الحالية مولدة خصيصًا للمشروع باستخدام أداة OpenAI المدمجة لتوليد الصور، وليست منسوخة من علامات تجارية أو متاجر خارجية.
 
-- `classic-black-tshirt.webp`: https://unsplash.com/photos/black-crew-neck-t-shirt-6Nub980bI3I
-- `oversized-tshirt.webp`: https://unsplash.com/photos/black-crew-neck-t-shirt-Cs4GVbMqKGY
-- `denim-jacket.webp`: https://unsplash.com/photos/woman-wearing-denim-jacket-c7Rty-qE79o
-- `linen-dress.webp`: https://unsplash.com/photos/a-person-in-a-dress-DlsJEuIiq2I
-- `urban-hoodie.webp`: https://unsplash.com/photos/person-wearing-hoodie-MQm1JPi0kVA
-- `kids-denim-shorts.webp`: https://unsplash.com/photos/a-pair-of-blue-shorts-hanging-on-a-hanger-v5jTUTeuc1c
+## مواصفات التوليد
+
+- تصوير منتجات واقعي بأسلوب كتالوج تجارة إلكترونية.
+- خلفية استوديو محايدة وإضاءة ناعمة.
+- منتجات بلا شعارات أو علامات تجارية أو نصوص أو علامات مائية.
+- لا تحتوي الصور على نساء أو رجال أو أطفال أو عارضين أو أجزاء جسم.
+- المجموعات تشمل الملابس المعروضة منفردة، المنزل والمطبخ، الإلكترونيات، العطور والإكسسوارات، منتجات الأطفال، والأجهزة المنزلية.
+
+## أماكن الملفات
+
+- لوحات التوليد الأصلية: `public/images/products/generated/sheets/`
+- صور 100 منتج: `public/images/products/generated/catalog/001` حتى `100`
+- يحتوي كل مجلد منتج على:
+  - `cover.webp`
+  - `gallery-1.webp`
+  - `gallery-2.webp`
+
+تم استخراج صور المنتجات من لوحات التوليد وتحويلها إلى WebP محليًا. لا يحتاج تشغيل `db:seed` إلى اتصال بالإنترنت.
+
+الصور القديمة الموجودة مباشرة داخل `public/images/products/` محفوظة للتوافق فقط، ولا تشير إليها بيانات المنتجات الحالية.

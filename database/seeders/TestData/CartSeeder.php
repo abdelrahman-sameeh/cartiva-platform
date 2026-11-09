@@ -2,6 +2,7 @@
 
 namespace Database\Seeders\TestData;
 
+use App\Enums\RoleName;
 use App\Models\Cart\Cart;
 use App\Models\User;
 use Illuminate\Database\Seeder;
@@ -10,12 +11,9 @@ class CartSeeder extends Seeder
 {
     public function run(): void
     {
-        $buyers = User::query()
-            ->whereIn('email', ['buyer1@gmail.com', 'buyer2@gmail.com'])
-            ->get();
-
-        foreach ($buyers as $buyer) {
-            Cart::create(['user_id' => $buyer->id]);
-        }
+        User::query()
+            ->whereHas('roles', fn ($query) => $query->where('name', RoleName::USER->value))
+            ->get()
+            ->each(fn (User $buyer) => Cart::create(['user_id' => $buyer->id]));
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Models\Order;
 
 use App\Models\SellerTransfer;
+use App\Models\Shipment;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -61,5 +62,10 @@ class SubOrder extends Model
     public function sellerTransfer(): HasOne
     {
         return $this->hasOne(SellerTransfer::class);
+    }
+
+    public function shipment(): HasOne
+    {
+        return $this->hasOne(Shipment::class);
     }
 }

@@ -27,6 +27,31 @@ class SellerTransferServiceTest extends TestCase
         config(['services.stripe.fees.platform_commission_bps' => 500]);
     }
 
+    public function test_it_does_not_transfer_a_sellers_money_before_their_sub_order_is_completed(): void
+    {
+        [$order] = $this->paidOrder('75.00');
+        $seller = $this->readySeller('acct_wait_for_delivery');
+        $subOrder = $order->subOrders()->create([
+            'seller_id' => $seller->id,
+            'subtotal' => 75,
+            'discount' => 0,
+            'total_price' => 75,
+            'status' => 'pending',
+        ]);
+        $gateway = Mockery::mock(StripeTransferGateway::class);
+        $gateway->shouldNotReceive('sourceTransaction');
+        $gateway->shouldNotReceive('createTransfer');
+        $this->app->instance(StripeTransferGateway::class, $gateway);
+
+        app(SellerTransferService::class)->processPaidOrder($order->id);
+
+        $this->assertDatabaseHas('seller_transfers', [
+            'sub_order_id' => $subOrder->id,
+            'status' => SellerTransfer::STATUS_PENDING,
+            'transferred_at' => null,
+        ]);
+    }
+
     public function test_it_transfers_each_sub_order_total_once(): void
     {
         [$order, $payment] = $this->paidOrder('150.00');
@@ -37,14 +62,14 @@ class SellerTransferServiceTest extends TestCase
             'subtotal' => 100,
             'discount' => 0,
             'total_price' => 100,
-            'status' => 'pending',
+            'status' => 'completed',
         ]);
         $secondSubOrder = $order->subOrders()->create([
             'seller_id' => $secondSeller->id,
             'subtotal' => 60,
             'discount' => 10,
             'total_price' => 50,
-            'status' => 'pending',
+            'status' => 'completed',
         ]);
         $gateway = Mockery::mock(StripeTransferGateway::class);
         $gateway->shouldReceive('sourceTransaction')
@@ -112,7 +137,7 @@ class SellerTransferServiceTest extends TestCase
             'subtotal' => 75,
             'discount' => 0,
             'total_price' => 75,
-            'status' => 'pending',
+            'status' => 'completed',
         ]);
         $gateway = Mockery::mock(StripeTransferGateway::class);
         $gateway->shouldNotReceive('sourceTransaction');
@@ -158,7 +183,7 @@ class SellerTransferServiceTest extends TestCase
             'subtotal' => 75,
             'discount' => 0,
             'total_price' => 75,
-            'status' => 'pending',
+            'status' => 'completed',
         ]);
         $gateway = Mockery::mock(StripeTransferGateway::class);
         $gateway->shouldReceive('sourceTransaction')
@@ -186,7 +211,7 @@ class SellerTransferServiceTest extends TestCase
             'subtotal' => 25,
             'discount' => 0,
             'total_price' => 25,
-            'status' => 'pending',
+            'status' => 'completed',
         ]);
         $failingGateway = Mockery::mock(StripeTransferGateway::class);
         $failingGateway->shouldReceive('sourceTransaction')->once()->andReturn($this->sourceTransaction(2500));
@@ -234,14 +259,14 @@ class SellerTransferServiceTest extends TestCase
             'subtotal' => 100,
             'discount' => 0,
             'total_price' => 100,
-            'status' => 'pending',
+            'status' => 'completed',
         ]);
         $secondSubOrder = $order->subOrders()->create([
             'seller_id' => $secondSeller->id,
             'subtotal' => 50,
             'discount' => 0,
             'total_price' => 50,
-            'status' => 'pending',
+            'status' => 'completed',
         ]);
         $gateway = Mockery::mock(StripeTransferGateway::class);
         $gateway->shouldReceive('sourceTransaction')
@@ -285,7 +310,7 @@ class SellerTransferServiceTest extends TestCase
             'discount' => 0,
             'total_price' => $total,
             'phone' => '01012345678',
-            'status' => 'pending',
+            'status' => 'completed',
             'payment_status' => 'paid',
             'payment_method' => 'card',
         ]);

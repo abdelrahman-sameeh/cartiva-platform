@@ -10,11 +10,9 @@ class SubCategorySeeder extends Seeder
 {
     public function run(): void
     {
-        $subCategories = [
-            'ملابس رجالي' => ['تيشيرتات رجالي', 'ملابس كاجوال رجالي', 'هوديز رجالي'],
-            'ملابس حريمي' => ['تيشيرتات حريمي', 'ملابس كاجوال حريمي', 'جاكيتات حريمي', 'فساتين حريمي'],
-            'ملابس أطفال' => ['تيشيرتات أطفال', 'ملابس رياضية أطفال', 'شورتات أطفال'],
-        ];
+        $subCategories = collect(ProductCatalog::products())
+            ->groupBy('category')
+            ->map(fn ($products) => $products->pluck('sub_category')->unique());
 
         foreach ($subCategories as $categoryTitle => $titles) {
             $category = Category::query()->where('title', $categoryTitle)->firstOrFail();

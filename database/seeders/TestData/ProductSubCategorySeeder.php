@@ -11,19 +11,10 @@ class ProductSubCategorySeeder extends Seeder
 {
     public function run(): void
     {
-        $productSubCategories = [
-            'تيشيرت أسود كلاسيك' => 'تيشيرتات رجالي',
-            'تيشيرت أسود أوفرسايز' => 'تيشيرتات رجالي',
-            'جاكيت جينز حريمي' => 'جاكيتات حريمي',
-            'فستان كتان موف' => 'فساتين حريمي',
-            'جاكيت هودي حضري' => 'هوديز رجالي',
-            'شورت أطفال سماوي' => 'شورتات أطفال',
-        ];
-
-        foreach ($productSubCategories as $productTitle => $subCategoryTitle) {
+        foreach (ProductCatalog::products() as $definition) {
             ProductSubCategory::create([
-                'product_id' => Product::query()->where('title', $productTitle)->firstOrFail()->id,
-                'sub_category_id' => SubCategory::query()->where('title', $subCategoryTitle)->firstOrFail()->id,
+                'product_id' => Product::query()->where('title', $definition['title'])->firstOrFail()->id,
+                'sub_category_id' => SubCategory::query()->where('title', $definition['sub_category'])->firstOrFail()->id,
             ]);
         }
     }

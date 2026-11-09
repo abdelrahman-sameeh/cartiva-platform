@@ -5,14 +5,18 @@ namespace App\Services;
 use App\Models\Coupon;
 use App\Models\Order\Order;
 use App\Models\Order\SubOrder;
+use App\Models\OrderCouponAllocation;
 use App\Models\ProductVariant;
 use App\Models\User;
+use App\Services\Shipping\DemoShippingService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class OrderService
 {
+    public function __construct(private readonly DemoShippingService $shipping) {}
+
     public function forCustomer(User $customer): Builder
     {
         return Order::query()->where('user_id', $customer->id);
@@ -25,6 +29,7 @@ class OrderService
         return $order->load([
             'address',
             'subOrders.seller:id,first_name,last_name,email',
+            'subOrders.shipment',
             'subOrders.items.pictures',
         ]);
     }
@@ -90,6 +95,7 @@ class OrderService
 
                 $subOrdersData[$sellerId] = [
                     'items' => $items,
+                    'coupon' => $coupon,
                     'subtotal' => $subtotal,
                     'discount' => $discount,
                     'total' => $subtotal - $discount,
@@ -118,6 +124,16 @@ class OrderService
                     'total_price' => $subOrderData['total'],
                     'status' => 'pending',
                 ]);
+                $this->shipping->createForSubOrder($subOrder);
+
+                if ($subOrderData['coupon']) {
+                    OrderCouponAllocation::create([
+                        'order_id' => $order->id,
+                        'sub_order_id' => $subOrder->id,
+                        'coupon_id' => $subOrderData['coupon']->id,
+                        'discount' => $subOrderData['discount'],
+                    ]);
+                }
 
                 foreach ($subOrderData['items'] as $item) {
                     $product = $item->product;
@@ -169,6 +185,7 @@ class OrderService
         return $subOrder->load([
             'order.user:id,first_name,last_name,email',
             'order.address',
+            'shipment',
             'items.pictures',
         ]);
     }
@@ -176,6 +193,19 @@ class OrderService
     public function updateSubOrderStatus(User $seller, SubOrder $subOrder, string $status): SubOrder
     {
         $subOrder = $this->sellerOrder($seller, $subOrder);
+
+        if ($status === 'cancelled') {
+            $this->shipping->cancel($subOrder);
+
+            return $subOrder->refresh();
+        }
+
+        if (! in_array($subOrder->status, ['pending', 'processing'], true)) {
+            throw ValidationException::withMessages([
+                'status' => 'لا يمكن إعادة الطلب إلى التجهيز بعد شحنه أو إغلاقه.',
+            ]);
+        }
+
         $subOrder->update(['status' => $status]);
         $this->syncOrderStatus($subOrder->order);
 
@@ -200,16 +230,16 @@ class OrderService
     private function syncOrderStatus(Order $order): void
     {
         $statuses = $order->subOrders()->pluck('status')->all();
-        $uniqueStatuses = array_values(array_unique($statuses));
-
-        if ($uniqueStatuses === ['cancelled']) {
+        if (collect($statuses)->every(fn (string $status): bool => $status === 'cancelled')) {
             $order->update(['status' => 'cancelled']);
+        } elseif (collect($statuses)->every(
+            fn (string $status): bool => in_array($status, ['completed', 'cancelled'], true)
+        )) {
+            $order->update(['status' => 'completed']);
         } elseif (in_array('pending', $statuses, true) || in_array('processing', $statuses, true)) {
             $order->update(['status' => 'processing']);
         } elseif (in_array('shipped', $statuses, true)) {
             $order->update(['status' => 'shipped']);
-        } elseif ($uniqueStatuses === ['completed']) {
-            $order->update(['status' => 'completed']);
         }
     }
 }

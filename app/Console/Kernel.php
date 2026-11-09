@@ -15,6 +15,9 @@ class Kernel extends ConsoleKernel
         $schedule->command('stripe:retry-seller-transfers')
             ->everyMinute()
             ->withoutOverlapping();
+        $schedule->command('stripe:process-refunds')
+            ->everyMinute()
+            ->withoutOverlapping();
     }
 
     /**

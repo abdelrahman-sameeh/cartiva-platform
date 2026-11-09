@@ -39,6 +39,13 @@
                 @include('orders._status', ['status' => $subOrder->status])
               </div>
 
+              @if ($subOrder->shipment)
+                <div class="alert alert-light border d-flex flex-wrap justify-content-between gap-2" role="status">
+                  <span>شركة الشحن التجريبية</span>
+                  <strong dir="ltr">{{ $subOrder->shipment->tracking_number }}</strong>
+                </div>
+              @endif
+
               @foreach ($subOrder->items as $item)
                 <article class="d-flex align-items-center gap-3 border-top py-3">
                   @if ($item->cover_image)

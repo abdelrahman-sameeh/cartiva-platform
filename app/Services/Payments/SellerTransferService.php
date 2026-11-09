@@ -26,6 +26,7 @@ class SellerTransferService
         $payment = $this->prepareTransfers($orderId);
         $transfers = SellerTransfer::query()
             ->where('payment_id', $payment->id)
+            ->whereHas('subOrder', fn ($query) => $query->where('status', 'completed'))
             ->whereIn('status', [
                 SellerTransfer::STATUS_PENDING,
                 SellerTransfer::STATUS_PROCESSING,

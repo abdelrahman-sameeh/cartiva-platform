@@ -10,6 +10,7 @@ use App\Models\User;
 use App\Services\ProductFilter;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -190,8 +191,27 @@ class StorefrontController extends Controller
     {
         abort_unless($product->is_active, 404);
 
+        $reviews = $product->reviews()
+            ->with([
+                'user' => fn ($query) => $query
+                    ->without('roles')
+                    ->select('id', 'first_name', 'last_name'),
+            ])
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
+        $user = Auth::user();
+        $currentReview = $user?->reviews()
+            ->where('product_id', $product->id)
+            ->first();
+
         return view('storefront.products.show', [
             'product' => $product->load('attributes', 'sub_categories.category', 'pictures', 'variants.options'),
+            'reviews' => $reviews,
+            'currentReview' => $currentReview,
+            'canReview' => $user !== null
+                && $currentReview === null
+                && $user->hasPurchasedProduct($product->id),
             'storeSeller' => $seller,
         ]);
     }

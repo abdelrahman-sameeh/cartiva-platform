@@ -9,7 +9,9 @@ class CategorySeeder extends Seeder
 {
     public function run(): void
     {
-        foreach (['ملابس رجالي', 'ملابس حريمي', 'ملابس أطفال'] as $title) {
+        $categories = collect(ProductCatalog::products())->pluck('category')->unique();
+
+        foreach ($categories as $title) {
             Category::create(['title' => $title]);
         }
     }

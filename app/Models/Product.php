@@ -50,6 +50,8 @@ class Product extends Model
     protected $casts = [
         'price' => 'decimal:2',
         'discount_amount' => 'decimal:2',
+        'rating_avg' => 'decimal:1',
+        'rating_count' => 'integer',
     ];
 
     public function getCoverImageUrlAttribute()
@@ -120,8 +122,8 @@ class Product extends Model
         return $this->belongsToMany(SubCategory::class, ProductSubCategory::class, 'product_id', 'sub_category_id');
     }
 
-    public function reviews(): HasMany{
+    public function reviews(): HasMany
+    {
         return $this->hasMany(Review::class);
     }
-
 }

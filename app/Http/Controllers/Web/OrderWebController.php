@@ -69,7 +69,7 @@ class OrderWebController extends Controller
         return view('seller.orders.index', [
             'subOrders' => $this->orderService
                 ->forSeller($request->user())
-                ->with(['order.user:id,first_name,last_name,email', 'items'])
+                ->with(['order.user:id,first_name,last_name,email', 'items', 'shipment'])
                 ->latest()
                 ->paginate(10),
         ]);

@@ -176,15 +176,16 @@ class OrderWebTest extends TestCase
             ->assertSee('كحلي')
             ->assertSee('بيانات الدفع')
             ->assertSee('في انتظار الدفع')
-            ->assertSee('الدفع عند الاستلام');
+            ->assertSee('الدفع عند الاستلام')
+            ->assertSee('شركة الشحن التجريبية');
 
         $this->actingAs($seller)
-            ->put(route('seller.orders.status.update', $subOrder), ['status' => 'shipped'])
+            ->put(route('seller.orders.status.update', $subOrder), ['status' => 'processing'])
             ->assertRedirect()
             ->assertSessionHas('success');
 
-        $this->assertDatabaseHas('sub_orders', ['id' => $subOrder->id, 'status' => 'shipped']);
-        $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => 'shipped']);
+        $this->assertDatabaseHas('sub_orders', ['id' => $subOrder->id, 'status' => 'processing']);
+        $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => 'processing']);
     }
 
     private function prepareCart(): array

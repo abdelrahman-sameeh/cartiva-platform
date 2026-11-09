@@ -19,7 +19,7 @@ class OrderApiController extends Controller
     {
         $orders = $this->orderService
             ->forCustomer($request->user())
-            ->with(['subOrders.items.pictures'])
+            ->with(['subOrders.items.pictures', 'subOrders.shipment'])
             ->latest()
             ->get();
 
@@ -47,7 +47,7 @@ class OrderApiController extends Controller
     {
         $subOrders = $this->orderService
             ->forSeller($request->user())
-            ->with(['order:id,user_id,phone,address_id,payment_method,payment_status', 'items.pictures'])
+            ->with(['order:id,user_id,phone,address_id,payment_method,payment_status', 'items.pictures', 'shipment'])
             ->latest()
             ->get();
 
