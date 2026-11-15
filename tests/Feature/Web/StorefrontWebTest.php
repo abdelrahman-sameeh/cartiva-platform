@@ -65,6 +65,26 @@ class StorefrontWebTest extends TestCase
             ->assertDontSee('Wireless Mouse');
     }
 
+    public function test_search_pagination_uses_bootstrap_and_preserves_filters(): void
+    {
+        $seller = $this->createSeller();
+
+        foreach (range(1, 13) as $number) {
+            $seller->products()->create([
+                'title' => "Paginated Product {$number}",
+                'description' => 'A product used to verify storefront pagination.',
+                'price' => 100 + $number,
+                'discount_amount' => 0,
+            ]);
+        }
+
+        $this->get(route('products.search', ['q' => 'Paginated']))
+            ->assertOk()
+            ->assertSee('class="page-item', false)
+            ->assertSee('class="page-link', false)
+            ->assertSee('q=Paginated&amp;page=2', false);
+    }
+
     public function test_search_page_can_search_by_attribute_and_category(): void
     {
         $seller = $this->createSeller();
