@@ -167,6 +167,12 @@
                                         <li><hr class="dropdown-divider"></li>
                                         <li class="dropdown-label">الإدارة</li>
                                         <li>
+                                            <a class="dropdown-item" href="{{ route('admin.orders.index') }}">
+                                                <i class="bi bi-receipt" aria-hidden="true"></i>
+                                                الطلبات
+                                            </a>
+                                        </li>
+                                        <li>
                                             <a class="dropdown-item" href="{{ route('admin.categories.index') }}">
                                                 <i class="bi bi-grid" aria-hidden="true"></i>
                                                 التصنيفات

@@ -8,14 +8,23 @@ use App\Models\Order\SubOrder;
 use App\Models\OrderCouponAllocation;
 use App\Models\ProductVariant;
 use App\Models\User;
-use App\Services\Shipping\DemoShippingService;
+use App\Services\Payments\RefundService;
+use App\Support\ProductVariantOptions;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 class OrderService
 {
-    public function __construct(private readonly DemoShippingService $shipping) {}
+    private const STATUS_TRANSITIONS = [
+        'pending' => ['processing', 'shipped', 'completed', 'cancelled'],
+        'processing' => ['shipped', 'completed', 'cancelled'],
+        'shipped' => ['completed'],
+        'completed' => [],
+        'cancelled' => [],
+    ];
+
+    public function __construct(private readonly RefundService $refunds) {}
 
     public function forCustomer(User $customer): Builder
     {
@@ -29,7 +38,6 @@ class OrderService
         return $order->load([
             'address',
             'subOrders.seller:id,first_name,last_name,email',
-            'subOrders.shipment',
             'subOrders.items.pictures',
         ]);
     }
@@ -124,8 +132,6 @@ class OrderService
                     'total_price' => $subOrderData['total'],
                     'status' => 'pending',
                 ]);
-                $this->shipping->createForSubOrder($subOrder);
-
                 if ($subOrderData['coupon']) {
                     OrderCouponAllocation::create([
                         'order_id' => $order->id,
@@ -185,31 +191,53 @@ class OrderService
         return $subOrder->load([
             'order.user:id,first_name,last_name,email',
             'order.address',
-            'shipment',
             'items.pictures',
         ]);
     }
 
     public function updateSubOrderStatus(User $seller, SubOrder $subOrder, string $status): SubOrder
     {
-        $subOrder = $this->sellerOrder($seller, $subOrder);
+        abort_unless((int) $subOrder->seller_id === (int) $seller->id, 403, 'هذا الطلب لا يخص حسابك.');
 
-        if ($status === 'cancelled') {
-            $this->shipping->cancel($subOrder);
+        return $this->transitionSubOrder($subOrder, $status);
+    }
+
+    public function updateSubOrderStatusAsAdmin(SubOrder $subOrder, string $status): SubOrder
+    {
+        return $this->transitionSubOrder($subOrder, $status);
+    }
+
+    public function allowedStatusTransitions(SubOrder $subOrder): array
+    {
+        return self::STATUS_TRANSITIONS[$subOrder->status] ?? [];
+    }
+
+    private function transitionSubOrder(SubOrder $subOrder, string $status): SubOrder
+    {
+        return DB::transaction(function () use ($subOrder, $status): SubOrder {
+            $order = Order::query()->lockForUpdate()->findOrFail($subOrder->order_id);
+            $subOrder = SubOrder::query()
+                ->lockForUpdate()
+                ->findOrFail($subOrder->id);
+            $subOrder->setRelation('order', $order);
+
+            if (! in_array($status, $this->allowedStatusTransitions($subOrder), true)) {
+                throw ValidationException::withMessages([
+                    'status' => 'لا يمكن نقل الطلب من حالته الحالية إلى الحالة المختارة.',
+                ]);
+            }
+
+            $subOrder->update(['status' => $status]);
+
+            if ($status === 'cancelled') {
+                $this->restoreInventory($subOrder);
+                $this->finalizeCancellation($subOrder);
+            }
+
+            $this->syncOrderStatus($subOrder->order);
 
             return $subOrder->refresh();
-        }
-
-        if (! in_array($subOrder->status, ['pending', 'processing'], true)) {
-            throw ValidationException::withMessages([
-                'status' => 'لا يمكن إعادة الطلب إلى التجهيز بعد شحنه أو إغلاقه.',
-            ]);
-        }
-
-        $subOrder->update(['status' => $status]);
-        $this->syncOrderStatus($subOrder->order);
-
-        return $subOrder->refresh();
+        });
     }
 
     private function validCouponsBySeller($cartCoupons): array
@@ -230,16 +258,80 @@ class OrderService
     private function syncOrderStatus(Order $order): void
     {
         $statuses = $order->subOrders()->pluck('status')->all();
+        $status = null;
+
         if (collect($statuses)->every(fn (string $status): bool => $status === 'cancelled')) {
-            $order->update(['status' => 'cancelled']);
+            $status = 'cancelled';
         } elseif (collect($statuses)->every(
             fn (string $status): bool => in_array($status, ['completed', 'cancelled'], true)
         )) {
-            $order->update(['status' => 'completed']);
-        } elseif (in_array('pending', $statuses, true) || in_array('processing', $statuses, true)) {
-            $order->update(['status' => 'processing']);
+            $status = 'completed';
         } elseif (in_array('shipped', $statuses, true)) {
-            $order->update(['status' => 'shipped']);
+            $status = 'shipped';
+        } elseif (in_array('processing', $statuses, true) || in_array('completed', $statuses, true)) {
+            $status = 'processing';
+        } else {
+            $status = 'pending';
         }
+
+        $values = ['status' => $status];
+
+        if ($status === 'completed' && $order->payment_method === 'cash') {
+            $values['payment_status'] = 'paid';
+        }
+
+        $order->update($values);
+    }
+
+    private function restoreInventory(SubOrder $subOrder): void
+    {
+        $subOrder->loadMissing('items');
+
+        foreach ($subOrder->items as $item) {
+            $variant = ProductVariant::query()
+                ->when(
+                    $item->variant_sku,
+                    fn ($query) => $query->where('sku', $item->variant_sku),
+                    fn ($query) => $query
+                        ->where('product_id', $item->product_id)
+                        ->where('option_signature', ProductVariantOptions::signature($item->variant_options ?? []))
+                )
+                ->lockForUpdate()
+                ->first();
+
+            if (! $variant) {
+                continue;
+            }
+
+            $variant->increment('stock', $item->quantity);
+            $product = $variant->product()->lockForUpdate()->first();
+
+            if ($product) {
+                $product->update(['sold_count' => max(0, $product->sold_count - $item->quantity)]);
+            }
+        }
+    }
+
+    private function finalizeCancellation(SubOrder $subOrder): void
+    {
+        $this->refunds->requestForCancelledSubOrder($subOrder);
+        $allocation = OrderCouponAllocation::query()
+            ->where('sub_order_id', $subOrder->id)
+            ->lockForUpdate()
+            ->first();
+
+        if ($allocation && ! $allocation->released_at) {
+            if ($allocation->coupon && $allocation->coupon->used_count > 0) {
+                $allocation->coupon->decrement('used_count');
+            }
+            $allocation->update(['released_at' => now()]);
+        }
+
+        $activeSubOrders = $subOrder->order->subOrders()->where('status', '!=', 'cancelled')->get();
+        $subOrder->order->update([
+            'subtotal' => $activeSubOrders->sum('subtotal'),
+            'discount' => $activeSubOrders->sum('discount'),
+            'total_price' => $activeSubOrders->sum('total_price'),
+        ]);
     }
 }

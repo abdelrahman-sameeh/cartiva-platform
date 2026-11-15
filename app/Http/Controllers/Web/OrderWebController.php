@@ -69,7 +69,7 @@ class OrderWebController extends Controller
         return view('seller.orders.index', [
             'subOrders' => $this->orderService
                 ->forSeller($request->user())
-                ->with(['order.user:id,first_name,last_name,email', 'items', 'shipment'])
+                ->with(['order.user:id,first_name,last_name,email', 'items'])
                 ->latest()
                 ->paginate(10),
         ]);
@@ -79,6 +79,8 @@ class OrderWebController extends Controller
     {
         return view('seller.orders.show', [
             'subOrder' => $this->orderService->sellerOrder($request->user(), $subOrder),
+            'allowedStatuses' => $this->orderService->allowedStatusTransitions($subOrder),
+            'managementContext' => 'seller',
         ]);
     }
 

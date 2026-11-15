@@ -140,6 +140,15 @@
                         </div>
 
                         <div class="account-action-grid">
+                            <a class="account-action" href="{{ route('admin.orders.index') }}">
+                                <span class="account-action-icon"><i class="bi bi-receipt" aria-hidden="true"></i></span>
+                                <span class="account-action-copy">
+                                    <strong>الطلبات</strong>
+                                    <small>تابع طلبات البائعين وحدّث حالاتها</small>
+                                </span>
+                                <i class="bi bi-arrow-left account-action-arrow" aria-hidden="true"></i>
+                            </a>
+
                             <a class="account-action" href="{{ route('admin.categories.index') }}">
                                 <span class="account-action-icon"><i class="bi bi-grid" aria-hidden="true"></i></span>
                                 <span class="account-action-copy">

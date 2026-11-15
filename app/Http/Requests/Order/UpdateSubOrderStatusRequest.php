@@ -15,12 +15,12 @@ class UpdateSubOrderStatusRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'status' => ['required', Rule::in(['processing', 'cancelled'])],
+            'status' => ['required', Rule::in(['processing', 'shipped', 'completed', 'cancelled'])],
         ];
     }
 
     public function messages(): array
     {
-        return ['status.in' => 'الشحن والتسليم يتم تحديثهما من شركة الشحن فقط.'];
+        return ['status.in' => 'حالة الطلب المختارة غير صالحة.'];
     }
 }

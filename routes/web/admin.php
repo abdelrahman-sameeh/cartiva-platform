@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Web\AdminOrderController;
 use App\Http\Controllers\Web\AdminUserRoleController;
 use App\Http\Controllers\Web\CategoryWebController;
 use Illuminate\Support\Facades\Route;
@@ -8,6 +9,11 @@ Route::middleware(['auth', 'roles:admin'])
     ->prefix('admin')
     ->name('admin.')
     ->group(function () {
+        Route::get('/orders', [AdminOrderController::class, 'index'])->name('orders.index');
+        Route::get('/orders/{subOrder}', [AdminOrderController::class, 'show'])->name('orders.show');
+        Route::put('/orders/{subOrder}/status', [AdminOrderController::class, 'updateStatus'])
+            ->name('orders.status.update');
+
         Route::get('/users/roles', [AdminUserRoleController::class, 'index'])->name('users.roles.index');
         Route::put('/users/{user}/roles', [AdminUserRoleController::class, 'update'])->name('users.roles.update');
 

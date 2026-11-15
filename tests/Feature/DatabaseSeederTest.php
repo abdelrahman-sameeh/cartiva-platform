@@ -10,7 +10,6 @@ use App\Models\Product;
 use App\Models\ProductPicture;
 use App\Models\ProductVariant;
 use App\Models\Review;
-use App\Models\Shipment;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -38,8 +37,8 @@ class DatabaseSeederTest extends TestCase
         $this->assertSame(9, Payment::query()->count());
         $this->assertGreaterThanOrEqual(40, CartItem::query()->count());
         $this->assertGreaterThanOrEqual(20, Review::query()->count());
-        $this->assertSame(60, Shipment::query()->count());
-        $this->assertSame(12, Shipment::query()->where('cod_status', 'remitted')->count());
+        $this->assertGreaterThan(0, Order::query()->where('status', 'completed')->count());
+        $this->assertGreaterThan(0, Order::query()->where('status', 'shipped')->count());
 
         Product::all()->each(function (Product $product) {
             $this->assertFileExists(public_path(ltrim($product->cover_image, '/')));

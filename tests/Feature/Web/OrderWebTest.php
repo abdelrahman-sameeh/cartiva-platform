@@ -177,10 +177,59 @@ class OrderWebTest extends TestCase
             ->assertSee('بيانات الدفع')
             ->assertSee('في انتظار الدفع')
             ->assertSee('الدفع عند الاستلام')
-            ->assertSee('شركة الشحن التجريبية');
+            ->assertSee('قيد التجهيز')
+            ->assertSee('تم الشحن')
+            ->assertSee('مكتمل')
+            ->assertSee('ملغي');
 
         $this->actingAs($seller)
             ->put(route('seller.orders.status.update', $subOrder), ['status' => 'processing'])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('sub_orders', ['id' => $subOrder->id, 'status' => 'processing']);
+        $this->assertDatabaseHas('orders', ['id' => $order->id, 'status' => 'processing']);
+
+        $this->actingAs($seller)
+            ->put(route('seller.orders.status.update', $subOrder), ['status' => 'shipped'])
+            ->assertRedirect();
+
+        $this->actingAs($seller)
+            ->put(route('seller.orders.status.update', $subOrder), ['status' => 'completed'])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('orders', [
+            'id' => $order->id,
+            'status' => 'completed',
+            'payment_status' => 'paid',
+        ]);
+    }
+
+    public function test_admin_can_view_and_update_seller_orders(): void
+    {
+        [$buyer, , , $address] = $this->prepareCart();
+        $order = app(OrderService::class)->create($buyer, [
+            'phone' => '01012345678',
+            'address_id' => $address->id,
+            'payment_method' => 'cash',
+        ]);
+        $subOrder = $order->subOrders()->firstOrFail();
+        $admin = $this->createUser('admin-orders@example.test');
+        $admin->syncRoles(RoleName::ADMIN);
+
+        $this->actingAs($admin)
+            ->get(route('admin.orders.index'))
+            ->assertOk()
+            ->assertSee('إدارة الطلبات')
+            ->assertSee($buyer->first_name);
+
+        $this->actingAs($admin)
+            ->get(route('admin.orders.show', $subOrder))
+            ->assertOk()
+            ->assertSee('تيشيرت طلب Web');
+
+        $this->actingAs($admin)
+            ->put(route('admin.orders.status.update', $subOrder), ['status' => 'processing'])
             ->assertRedirect()
             ->assertSessionHas('success');
 

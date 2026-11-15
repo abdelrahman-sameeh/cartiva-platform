@@ -11,88 +11,70 @@ use App\Models\User;
 use App\Services\OrderService;
 use App\Services\Payments\Gateways\StripeRefundGateway;
 use App\Services\Payments\RefundService;
-use App\Services\Shipping\DemoShippingService;
 use App\Support\ProductVariantOptions;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Str;
+use Illuminate\Validation\ValidationException;
 use Mockery;
 use Stripe\Refund as StripeRefund;
 use Tests\TestCase;
 
-class DemoShippingServiceTest extends TestCase
+class OrderStatusWorkflowTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_cod_is_collected_and_settled_per_seller(): void
+    public function test_cash_order_is_paid_after_all_seller_orders_are_completed(): void
     {
-        config([
-            'services.demo_shipping.platform_commission_bps' => 500,
-            'services.demo_shipping.cod_collection_bps' => 100,
-            'services.demo_shipping.shipping_fee' => 10,
-        ]);
         [$buyer, $address] = $this->buyer();
-        $firstVariant = $this->addToCart($buyer, 'منتج البائع الأول', 100);
-        $secondVariant = $this->addToCart($buyer, 'منتج البائع الثاني', 200);
-
-        $order = app(OrderService::class)->create($buyer, [
+        $this->addToCart($buyer, 'منتج البائع الأول', 100);
+        $this->addToCart($buyer, 'منتج البائع الثاني', 200);
+        $orders = app(OrderService::class);
+        $order = $orders->create($buyer, [
             'phone' => '01012345678',
             'address_id' => $address->id,
             'payment_method' => 'cash',
         ]);
-        $shipments = $order->subOrders()->with('shipment')->get()->pluck('shipment');
 
-        $this->assertCount(2, $shipments);
-        $this->assertSame(['100.00', '200.00'], $shipments->pluck('cod_amount')->sort()->values()->all());
-        $this->assertSame(['84.00', '178.00'], $shipments->pluck('seller_net')->sort()->values()->all());
-        $this->assertSame('pending', $order->payment_status);
+        foreach ($order->subOrders()->with('seller')->get() as $subOrder) {
+            $orders->updateSubOrderStatus($subOrder->seller, $subOrder, 'completed');
+        }
 
-        $shipping = app(DemoShippingService::class);
-        $first = $shipments->first();
-        $second = $shipments->last();
-        $shipping->handleEvent($first->tracking_number, 'delivered');
-
-        $this->assertSame('pending', $order->refresh()->payment_status);
-        $this->assertSame('completed', $first->subOrder->refresh()->status);
-
-        $shipping->handleEvent($first->tracking_number, 'remitted');
-        $shipping->handleEvent($first->tracking_number, 'seller-paid');
-        $shipping->handleEvent($second->tracking_number, 'delivered');
-
-        $this->assertSame('paid', $order->refresh()->payment_status);
-        $this->assertSame('completed', $order->status);
-        $this->assertNotNull($first->refresh()->seller_paid_at);
-        $this->assertSame(4, $firstVariant->refresh()->stock);
-        $this->assertSame(4, $secondVariant->refresh()->stock);
+        $this->assertSame('completed', $order->refresh()->status);
+        $this->assertSame('paid', $order->payment_status);
     }
 
-    public function test_a_returned_shipment_restores_inventory_once(): void
+    public function test_cancelling_before_shipping_restores_inventory_once(): void
     {
         [$buyer, $address] = $this->buyer();
-        $variant = $this->addToCart($buyer, 'منتج مرتجع', 100, 2);
-        $order = app(OrderService::class)->create($buyer, [
+        $variant = $this->addToCart($buyer, 'منتج ملغي', 100, 2);
+        $orders = app(OrderService::class);
+        $order = $orders->create($buyer, [
             'phone' => '01012345678',
             'address_id' => $address->id,
             'payment_method' => 'cash',
         ]);
-        $shipment = $order->subOrders()->firstOrFail()->shipment;
-        $shipping = app(DemoShippingService::class);
+        $subOrder = $order->subOrders()->with('seller')->firstOrFail();
 
         $this->assertSame(3, $variant->refresh()->stock);
-
-        $shipping->handleEvent($shipment->tracking_number, 'in-transit');
-        $shipping->handleEvent($shipment->tracking_number, 'returned');
-        $shipping->handleEvent($shipment->tracking_number, 'returned');
-
+        $orders->updateSubOrderStatus($subOrder->seller, $subOrder, 'cancelled');
         $this->assertSame(5, $variant->refresh()->stock);
+
+        try {
+            $orders->updateSubOrderStatus($subOrder->seller, $subOrder, 'cancelled');
+            $this->fail('A terminal order must not be cancelled twice.');
+        } catch (ValidationException) {
+            $this->assertSame(5, $variant->refresh()->stock);
+        }
+
         $this->assertSame('cancelled', $order->refresh()->status);
-        $this->assertSame('pending', $order->payment_status);
     }
 
-    public function test_a_paid_card_sub_order_is_partially_refunded_when_returned(): void
+    public function test_a_paid_card_sub_order_is_refunded_when_cancelled(): void
     {
         [$buyer, $address] = $this->buyer();
-        $this->addToCart($buyer, 'منتج مدفوع مرتجع', 125);
-        $order = app(OrderService::class)->create($buyer, [
+        $this->addToCart($buyer, 'منتج مدفوع ملغي', 125);
+        $orders = app(OrderService::class);
+        $order = $orders->create($buyer, [
             'phone' => '01012345678',
             'address_id' => $address->id,
             'payment_method' => 'card',
@@ -108,11 +90,9 @@ class DemoShippingServiceTest extends TestCase
             'paid_at' => now(),
         ]);
         $order->update(['payment_status' => 'paid']);
-        $shipment = $order->subOrders()->firstOrFail()->shipment;
-        $shipping = app(DemoShippingService::class);
+        $subOrder = $order->subOrders()->with('seller')->firstOrFail();
 
-        $shipping->handleEvent($shipment->tracking_number, 'in-transit');
-        $shipping->handleEvent($shipment->tracking_number, 'returned');
+        $orders->updateSubOrderStatus($subOrder->seller, $subOrder, 'cancelled');
 
         $refund = Refund::query()->sole();
         $this->assertSame($payment->id, $refund->payment_id);
@@ -122,7 +102,7 @@ class DemoShippingServiceTest extends TestCase
         $gateway = Mockery::mock(StripeRefundGateway::class);
         $gateway->shouldReceive('createRefund')
             ->once()
-            ->andReturn(StripeRefund::constructFrom(['id' => 're_test_return']));
+            ->andReturn(StripeRefund::constructFrom(['id' => 're_test_cancel']));
         $this->app->instance(StripeRefundGateway::class, $gateway);
 
         $this->assertSame(1, app(RefundService::class)->processOutstanding());
@@ -130,7 +110,7 @@ class DemoShippingServiceTest extends TestCase
         $this->assertSame('refunded', $order->refresh()->payment_status);
     }
 
-    public function test_cancelling_before_pickup_releases_coupon_and_recalculates_order_totals(): void
+    public function test_cancelling_releases_coupon_and_recalculates_order_totals(): void
     {
         [$buyer, $address] = $this->buyer();
         $variant = $this->addToCart($buyer, 'منتج عليه كوبون', 100);
@@ -144,21 +124,19 @@ class DemoShippingServiceTest extends TestCase
             'is_active' => true,
         ]);
         $buyer->cart->coupons()->create(['coupon_id' => $coupon->id]);
-        $order = app(OrderService::class)->create($buyer, [
+        $orders = app(OrderService::class);
+        $order = $orders->create($buyer, [
             'phone' => '01012345678',
             'address_id' => $address->id,
             'payment_method' => 'cash',
         ]);
-        $subOrder = $order->subOrders()->firstOrFail();
+        $subOrder = $order->subOrders()->with('seller')->firstOrFail();
 
-        $this->assertSame(1, $coupon->refresh()->used_count);
-        $this->assertSame('90.00', $order->total_price);
-
-        app(DemoShippingService::class)->cancel($subOrder);
+        $orders->updateSubOrderStatus($subOrder->seller, $subOrder, 'cancelled');
 
         $this->assertSame(0, $coupon->refresh()->used_count);
         $this->assertSame('0.00', $order->refresh()->total_price);
-        $this->assertSame('cancelled', $subOrder->order->refresh()->status);
+        $this->assertSame('cancelled', $order->status);
     }
 
     private function buyer(): array
@@ -181,7 +159,7 @@ class DemoShippingServiceTest extends TestCase
         $seller = User::factory()->create();
         $product = Product::create([
             'title' => $title,
-            'description' => 'منتج لاختبار دورة شركة الشحن التجريبية.',
+            'description' => 'منتج لاختبار دورة حالات الطلب.',
             'price' => $price,
             'discount_amount' => 0,
             'seller_id' => $seller->id,

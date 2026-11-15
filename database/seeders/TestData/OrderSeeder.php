@@ -7,13 +7,12 @@ use App\Models\Payment;
 use App\Models\Product;
 use App\Models\User;
 use App\Services\OrderService;
-use App\Services\Shipping\DemoShippingService;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Str;
 
 class OrderSeeder extends Seeder
 {
-    public function run(OrderService $orders, DemoShippingService $shipping): void
+    public function run(OrderService $orders): void
     {
         $products = Product::query()->with('variants')->orderBy('id')->get();
         $buyers = User::query()
@@ -69,22 +68,18 @@ class OrderSeeder extends Seeder
                 }]);
             }
 
-            foreach ($order->subOrders()->with('shipment')->get() as $subOrder) {
-                $tracking = $subOrder->shipment->tracking_number;
-
+            foreach ($order->subOrders()->with('seller')->get() as $subOrder) {
                 if ($scenario === 0) {
-                    $shipping->handleEvent($tracking, 'in-transit');
+                    $orders->updateSubOrderStatus($subOrder->seller, $subOrder, 'processing');
+                    $orders->updateSubOrderStatus($subOrder->seller, $subOrder, 'shipped');
                 } elseif (in_array($scenario, [1, 2], true)) {
-                    $shipping->handleEvent($tracking, 'delivered');
-
-                    if ($scenario === 1) {
-                        $shipping->handleEvent($tracking, 'remitted');
-                        $shipping->handleEvent($tracking, 'seller-paid');
-                    }
+                    $orders->updateSubOrderStatus($subOrder->seller, $subOrder, 'processing');
+                    $orders->updateSubOrderStatus($subOrder->seller, $subOrder, 'shipped');
+                    $orders->updateSubOrderStatus($subOrder->seller, $subOrder, 'completed');
                 } elseif ($scenario === 3) {
-                    $shipping->handleEvent($tracking, 'picked-up');
+                    $orders->updateSubOrderStatus($subOrder->seller, $subOrder, 'processing');
                 } else {
-                    $shipping->cancel($subOrder);
+                    $orders->updateSubOrderStatus($subOrder->seller, $subOrder, 'cancelled');
                 }
             }
         }
