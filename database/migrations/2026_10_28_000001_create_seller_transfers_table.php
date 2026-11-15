@@ -18,6 +18,12 @@ return new class extends Migration
             $table->uuid('idempotency_key')->unique();
             $table->unsignedBigInteger('amount_minor');
             $table->char('currency', 3);
+            $table->unsignedBigInteger('settlement_amount_minor')->nullable();
+            $table->char('settlement_currency', 3)->nullable();
+            $table->unsignedBigInteger('stripe_fee_minor')->nullable();
+            $table->unsignedBigInteger('platform_fee_minor')->nullable();
+            $table->unsignedSmallInteger('platform_fee_bps')->nullable();
+            $table->unsignedBigInteger('transfer_amount_minor')->nullable();
             $table->string('status')->default('pending');
             $table->text('failure_reason')->nullable();
             $table->timestamp('attempted_at')->nullable();

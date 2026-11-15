@@ -95,7 +95,7 @@ php artisan test
 ./vendor/bin/pint --test
 ```
 
-آخر تحقق كامل: 148 اختبارًا ناجحًا و1294 assertion.
+آخر تحقق كامل: 148 اختبارًا ناجحًا و1297 assertion.
 
 ## أهم جمل للشرح
 
