@@ -211,4 +211,16 @@ return [
 
     'partitioned' => false,
 
+    /*
+    |--------------------------------------------------------------------------
+    | Session Serialization
+    |--------------------------------------------------------------------------
+    |
+    | Keep PHP serialization during the framework upgrade so existing sessions
+    | remain valid. A later switch to JSON would sign every active user out.
+    |
+    */
+
+    'serialization' => 'php',
+
 ];
